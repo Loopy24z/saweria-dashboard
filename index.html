@@ -290,8 +290,8 @@
     <!-- SETTINGS -->
     <div class="tab-pane" id="tab-settings">
 
-      <!-- Kelola Akun -->
-      <div class="settings-card" style="margin-bottom:18px">
+      <!-- Kelola Akun (admin only) -->
+      <div id="accountSection" class="settings-card" style="margin-bottom:18px">
         <div class="settings-title">👥 Kelola Akun</div>
         <p class="section-desc">Tambah atau hapus akun yang bisa login ke dashboard ini.</p>
 
@@ -363,7 +363,7 @@ async function doLogin() {
     });
     const data = await res.json();
     if (data.ok) {
-      setSession({ email, key: data.key });
+      setSession({ email, key: data.key, isAdmin: data.isAdmin === true });
       document.getElementById('authWrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       initApp();
@@ -669,9 +669,13 @@ async function onEditAmt(id, currentAmt, btn) {
 }
 
 // ── Account Management ─────────────────────────────────────────────────
+function adminParam() {
+  return `&admin=${encodeURIComponent(getSession()?.email || '')}`;
+}
+
 async function loadAccounts() {
   try {
-    const data = await apiFetch('/accounts');
+    const data = await apiFetch(`/accounts?admin=${encodeURIComponent(getSession()?.email || '')}`);
     const list = document.getElementById('accountList');
     const accounts = data.data || [];
     if (!accounts.length) {
@@ -696,7 +700,7 @@ async function addAccount() {
   if (!email || !pass) { err.textContent = 'Isi email dan password.'; err.classList.add('show'); return; }
 
   try {
-    const res  = await fetch(`${baseUrl()}/accounts?key=${encodeURIComponent(apiKey())}`, {
+    const res  = await fetch(`${baseUrl()}/accounts?key=${encodeURIComponent(apiKey())}${adminParam()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pass }),
@@ -722,7 +726,7 @@ async function deleteAccount(email, btn) {
   if (!confirm(`Hapus akun ${email}?`)) return;
   btn.disabled = true; btn.textContent = '…';
   try {
-    await fetch(`${baseUrl()}/accounts/delete?key=${encodeURIComponent(apiKey())}`, {
+    await fetch(`${baseUrl()}/accounts/delete?key=${encodeURIComponent(apiKey())}${adminParam()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -810,6 +814,9 @@ function initApp() {
   const s = getSession();
   document.getElementById('headerUser').textContent = s?.email || '';
   document.getElementById('cfgUrl').value = getWorkerUrl();
+  // Sembunyikan Kelola Akun jika bukan admin
+  const accSection = document.getElementById('accountSection');
+  if (accSection) accSection.style.display = s?.isAdmin ? 'block' : 'none';
   // Load fx defaults dulu dari localStorage
   const fx = getFx();
   document.getElementById('fxNuke').value      = fx.Nuke      || 50000;

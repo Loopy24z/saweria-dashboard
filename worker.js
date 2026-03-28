@@ -24,6 +24,7 @@ const fail = (msg, status = 400) =>
   new Response(msg, { status, headers: CORS });
 
 const authKey = (url, env) => url.searchParams.get('key') === env.API_KEY;
+const isAdmin = (url, env) => url.searchParams.get('admin') === env.ADMIN_EMAIL;
 
 export default {
   async fetch(request, env) {
@@ -83,21 +84,24 @@ export default {
       return handleLogin(request, env);
     }
 
-    // GET /accounts?key=  ← list akun
+    // GET /accounts?key=  ← list akun (admin only)
     if (path === '/accounts' && method === 'GET') {
       if (!authKey(url, env)) return fail('Unauthorized', 401);
+      if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleListAccounts(env);
     }
 
-    // POST /accounts?key=  ← tambah akun
+    // POST /accounts?key=  ← tambah akun (admin only)
     if (path === '/accounts' && method === 'POST') {
       if (!authKey(url, env)) return fail('Unauthorized', 401);
+      if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleAddAccount(request, env);
     }
 
-    // POST /accounts/delete?key=  ← hapus akun
+    // POST /accounts/delete?key=  ← hapus akun (admin only)
     if (path === '/accounts/delete' && method === 'POST') {
       if (!authKey(url, env)) return fail('Unauthorized', 401);
+      if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleDeleteAccount(request, env);
     }
 
@@ -229,16 +233,16 @@ async function handleLogin(request, env) {
 
   const { email, password } = body;
 
-  // Cek akun utama (env vars)
+  // Cek akun utama (env vars) — admin
   if (email === env.ADMIN_EMAIL && password === env.ADMIN_PASS) {
-    return json({ ok: true, key: env.API_KEY });
+    return json({ ok: true, key: env.API_KEY, isAdmin: true });
   }
 
-  // Cek akun tambahan (KV)
+  // Cek akun tambahan (KV) — bukan admin
   const accounts = await getAccounts(env);
   const found = accounts.find(a => a.email === email && a.password === password);
   if (found) {
-    return json({ ok: true, key: env.API_KEY });
+    return json({ ok: true, key: env.API_KEY, isAdmin: false });
   }
 
   return json({ ok: false, error: 'Email atau password salah' }, 401);
