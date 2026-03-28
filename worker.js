@@ -76,6 +76,18 @@ export default {
       return handleLogin(request, env);
     }
 
+    // GET /config?key=  ← ambil tier config (Roblox & dashboard)
+    if (path === '/config' && method === 'GET') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleGetConfig(env);
+    }
+
+    // POST /config?key=  ← simpan tier config dari dashboard
+    if (path === '/config' && method === 'POST') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleSetConfig(request, env);
+    }
+
     return fail('Not Found', 404);
   },
 };
@@ -92,11 +104,14 @@ async function handleWebhook(request, env) {
 
   if (!amount) return fail('No amount');
 
+  const cfg       = await getConfig(env);
+  const level     = levelForAmount(amount, cfg.tiers);
   const donations = await getDonations(env);
   donations.unshift({
     id:         Date.now(),
     donor_name: name,
     amount,
+    level,
     message:    msg,
     status:     'pending',
     created_at: time,
@@ -183,6 +198,43 @@ async function getDonations(env) {
   return raw ? JSON.parse(raw) : [];
 }
 
+// ── Config ─────────────────────────────────────────────────────────────
+const DEFAULT_CONFIG = {
+  tiers: [
+    { name: 'Kilat',   minRp: 1,       level: 1, effect: 'Partikel',           color: '#6b7194' },
+    { name: 'Api',     minRp: 50000,   level: 4, effect: 'Nuke',               color: '#f97316' },
+    { name: 'Badai',   minRp: 150000,  level: 6, effect: 'Spesial',            color: '#a855f7' },
+    { name: 'Legenda', minRp: 500000,  level: 7, effect: 'Blackhole + Hammer', color: '#00d4c8' },
+  ],
+  effectMinRp: { Nuke: 50000, Hammer: 500000, Blackhole: 1000000 },
+};
+
+async function handleGetConfig(env) {
+  const raw = await env.DB.get('tier_config');
+  return json(raw ? JSON.parse(raw) : DEFAULT_CONFIG);
+}
+
+async function handleSetConfig(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return fail('Invalid JSON'); }
+  await env.DB.put('tier_config', JSON.stringify(body));
+  return json({ ok: true });
+}
+
+async function getConfig(env) {
+  const raw = await env.DB.get('tier_config');
+  return raw ? JSON.parse(raw) : DEFAULT_CONFIG;
+}
+
+function levelForAmount(amount, tiers) {
+  const sorted = [...tiers].sort((a, b) => b.minRp - a.minRp);
+  for (const t of sorted) {
+    if (amount >= t.minRp) return t.level || 1;
+  }
+  return 0;
+}
+
+// ── Leaderboard helper ─────────────────────────────────────────────────
 async function updateLeaderboard(env, donations) {
   const totals = {};
   for (const d of donations) {

@@ -256,15 +256,29 @@
     <!-- TIERS -->
     <div class="tab-pane" id="tab-tiers">
       <p class="section-desc">
-        Atur tingkat donasi — nama, jumlah minimum (Rp), efek, dan warna label.<br>
-        Data tersimpan di browser dan muncul sebagai label di tabel History & Top Donor.
+        Atur tingkat donasi — nama, jumlah minimum (Rp), level, efek, dan warna.<br>
+        Klik <b>Simpan ke Worker</b> agar tersimpan permanen dan dipakai saat donasi masuk.<br>
+        Klik <b>Salin Kode Roblox</b> lalu paste ke script Roblox Studio kamu.
       </p>
+
+      <!-- Effect Triggers -->
+      <div class="settings-card" style="margin-bottom:16px">
+        <div class="settings-title">⚡ Effect Triggers (Min Rp)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px">
+          <div><label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:4px">Nuke</label><input type="number" class="form-input" id="fxNuke" /></div>
+          <div><label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:4px">Hammer</label><input type="number" class="form-input" id="fxHammer" /></div>
+          <div><label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:4px">Blackhole</label><input type="number" class="form-input" id="fxBlackhole" /></div>
+        </div>
+      </div>
+
       <div class="settings-card">
         <div class="tier-list" id="tierList"></div>
         <button class="btn-add-tier" onclick="addTier()">+ Tambah Tingkat</button>
-        <div class="save-row">
-          <button class="btn accent" onclick="saveTiers()">Simpan</button>
+        <div class="save-row" style="flex-wrap:wrap;gap:8px">
+          <button class="btn accent" onclick="saveTiers()">💾 Simpan ke Worker</button>
+          <button class="btn" onclick="copyLuaCode()">📋 Salin Kode Roblox</button>
           <span class="save-ok" id="tierOk">✓ Tersimpan</span>
+          <span class="save-ok" id="copyOk">✓ Kode disalin!</span>
         </div>
       </div>
       <div class="settings-card">
@@ -367,35 +381,108 @@ function saveCfg() {
 
 // ── Tiers ──────────────────────────────────────────────────────────────
 const DEFAULT_TIERS = [
-  { name: 'Kilat',   minRp: 1,       effect: 'Partikel',           color: '#6b7194' },
-  { name: 'Api',     minRp: 50000,   effect: 'Nuke',               color: '#f97316' },
-  { name: 'Badai',   minRp: 150000,  effect: 'Spesial',            color: '#a855f7' },
-  { name: 'Legenda', minRp: 500000,  effect: 'Blackhole + Hammer', color: '#00d4c8' },
+  { name: 'Kilat',   minRp: 1,       level: 1, effect: 'Partikel',           color: '#6b7194' },
+  { name: 'Api',     minRp: 50000,   level: 4, effect: 'Nuke',               color: '#f97316' },
+  { name: 'Badai',   minRp: 150000,  level: 6, effect: 'Spesial',            color: '#a855f7' },
+  { name: 'Legenda', minRp: 500000,  level: 7, effect: 'Blackhole + Hammer', color: '#00d4c8' },
 ];
+const DEFAULT_FX = { Nuke: 50000, Hammer: 500000, Blackhole: 1000000 };
 
 function getTiers() {
   try { return JSON.parse(localStorage.getItem('sw_tiers')) || DEFAULT_TIERS; }
   catch { return DEFAULT_TIERS; }
 }
+function getFx() {
+  try { return JSON.parse(localStorage.getItem('sw_fx')) || DEFAULT_FX; }
+  catch { return DEFAULT_FX; }
+}
 
-function saveTiers() {
+function collectForm() {
   const rows  = document.querySelectorAll('.tier-row');
   const tiers = [];
   rows.forEach(r => tiers.push({
-    name:   r.querySelector('.ti-name').value.trim()   || 'Tier',
-    minRp:  parseInt(r.querySelector('.ti-minrp').value)  || 0,
+    name:   r.querySelector('.ti-name').value.trim()  || 'Tier',
+    minRp:  parseInt(r.querySelector('.ti-minrp').value) || 0,
+    level:  parseInt(r.querySelector('.ti-level').value) || 1,
     effect: r.querySelector('.ti-effect').value.trim() || '-',
-    color:  r.querySelector('.ti-color').value          || '#6b7194',
+    color:  r.querySelector('.ti-color').value         || '#6b7194',
   }));
   tiers.sort((a, b) => a.minRp - b.minRp);
-  localStorage.setItem('sw_tiers', JSON.stringify(tiers));
-  renderTiers(tiers);
-  renderTierPreview(tiers);
-  showOk('tierOk');
+  const effectMinRp = {
+    Nuke:      parseInt(document.getElementById('fxNuke').value)      || 0,
+    Hammer:    parseInt(document.getElementById('fxHammer').value)    || 0,
+    Blackhole: parseInt(document.getElementById('fxBlackhole').value) || 0,
+  };
+  return { tiers, effectMinRp };
+}
+
+async function saveTiers() {
+  const cfg = collectForm();
+  localStorage.setItem('sw_tiers', JSON.stringify(cfg.tiers));
+  localStorage.setItem('sw_fx',    JSON.stringify(cfg.effectMinRp));
+  renderTiers(cfg.tiers);
+  renderTierPreview(cfg.tiers);
+  // Simpan ke worker
+  try {
+    const sep = '/config'.includes('?') ? '&' : '?';
+    await fetch(`${baseUrl()}/config${sep}key=${encodeURIComponent(apiKey())}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg),
+    });
+    showOk('tierOk');
+  } catch {
+    showOk('tierOk');
+  }
+}
+
+async function loadTiersFromWorker() {
+  try {
+    const data = await apiFetch('/config');
+    if (data.tiers) {
+      localStorage.setItem('sw_tiers', JSON.stringify(data.tiers));
+      renderTiers(data.tiers);
+      renderTierPreview(data.tiers);
+    }
+    if (data.effectMinRp) {
+      localStorage.setItem('sw_fx', JSON.stringify(data.effectMinRp));
+      const fx = data.effectMinRp;
+      document.getElementById('fxNuke').value      = fx.Nuke      || 0;
+      document.getElementById('fxHammer').value    = fx.Hammer    || 0;
+      document.getElementById('fxBlackhole').value = fx.Blackhole || 0;
+    }
+  } catch { /* pakai localStorage */ }
+}
+
+function copyLuaCode() {
+  const cfg = collectForm();
+  const sorted = [...cfg.tiers].sort((a, b) => b.minRp - a.minRp);
+  const fx = cfg.effectMinRp;
+
+  let ifChain = sorted.map((t, i) =>
+    `\t${i === 0 ? 'if' : 'elseif'} amountRp >= ${t.minRp} then return ${t.level}`
+  ).join('\n');
+
+  const lua = `-- ── SaweriaSFX: levelForRp ────────────────────────────────
+local function levelForRp(amountRp: number): number
+${ifChain}
+\tend
+\treturn 0
+end
+
+-- ── SaweriaSFX: EFFECT_MIN_RP ──────────────────────────────
+local EFFECT_MIN_RP = {
+\tBlackhole = ${fx.Blackhole},
+\tNuke      = ${fx.Nuke},
+\tHammer    = ${fx.Hammer},
+}`;
+
+  navigator.clipboard.writeText(lua).then(() => showOk('copyOk'));
 }
 
 function addTier() {
-  renderTiers([...getTiers(), { name: 'Tier Baru', minRp: 0, effect: 'Efek', color: '#6b7194' }]);
+  const cur = collectForm().tiers;
+  renderTiers([...cur, { name: 'Tier Baru', minRp: 0, level: 1, effect: 'Efek', color: '#6b7194' }]);
 }
 
 function renderTiers(tiers) {
@@ -407,6 +494,7 @@ function renderTiers(tiers) {
     d.innerHTML = `
       <div><label>Nama</label><input class="form-input ti-name" value="${esc(t.name)}"></div>
       <div><label>Min Rp</label><input type="number" class="form-input ti-minrp" value="${t.minRp}"></div>
+      <div><label>Level</label><input type="number" class="form-input ti-level" value="${t.level || 1}" style="width:70px"></div>
       <div><label>Efek</label><input class="form-input ti-effect" value="${esc(t.effect)}"></div>
       <div><label>Warna</label><input type="color" class="form-input ti-color" value="${t.color}" style="padding:4px;height:36px"></div>
       <div style="align-self:flex-end"><button class="btn-del" onclick="this.closest('.tier-row').remove()">✕</button></div>`;
@@ -602,9 +690,15 @@ function initApp() {
   const s = getSession();
   document.getElementById('headerUser').textContent = s?.email || '';
   document.getElementById('cfgUrl').value = getWorkerUrl();
-  const tiers = getTiers();
-  renderTiers(tiers);
-  renderTierPreview(tiers);
+  // Load fx defaults dulu dari localStorage
+  const fx = getFx();
+  document.getElementById('fxNuke').value      = fx.Nuke      || 50000;
+  document.getElementById('fxHammer').value    = fx.Hammer    || 500000;
+  document.getElementById('fxBlackhole').value = fx.Blackhole || 1000000;
+  // Render tiers dari localStorage dulu, lalu update dari worker
+  renderTiers(getTiers());
+  renderTierPreview(getTiers());
+  loadTiersFromWorker();
   refreshAll();
   setInterval(refreshAll, 60_000);
 }
