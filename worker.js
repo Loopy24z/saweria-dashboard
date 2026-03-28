@@ -65,6 +65,13 @@ export default {
       return handleDelete(del[1], env);
     }
 
+    // POST /history/{id}/edit?key=  ← edit amount donasi
+    const edit = path.match(/^\/history\/(\d+)\/edit$/);
+    if (edit && method === 'POST') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleEditAmount(edit[1], request, env);
+    }
+
     // POST /test-notification?key=
     if (path === '/test-notification' && method === 'POST') {
       if (!authKey(url, env)) return fail('Unauthorized', 401);
@@ -158,6 +165,23 @@ async function handleDelete(id, env) {
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
   donations.splice(idx, 1);
+  await env.DB.put('donations', JSON.stringify(donations));
+  await updateLeaderboard(env, donations);
+  return json({ ok: true });
+}
+
+// ── Edit Amount ────────────────────────────────────────────────────────
+async function handleEditAmount(id, request, env) {
+  let body;
+  try { body = await request.json(); } catch { return fail('Invalid JSON'); }
+  const newAmount = Number(body.amount);
+  if (!newAmount || newAmount <= 0) return fail('Amount tidak valid');
+
+  const donations = await getDonations(env);
+  const idx = donations.findIndex(d => String(d.id) === String(id));
+  if (idx === -1) return fail('Not found', 404);
+
+  donations[idx].amount = newAmount;
   await env.DB.put('donations', JSON.stringify(donations));
   await updateLeaderboard(env, donations);
   return json({ ok: true });

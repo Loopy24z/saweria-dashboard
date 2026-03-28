@@ -573,14 +573,17 @@ function renderHistRows(data, tbodyId, withDelete) {
       ? `<span class="status-pend">${esc(status)}</span>`
       : `<span class="status-ok">${esc(status)}</span>`;
     const delTd = withDelete
-      ? `<td><button class="btn sm danger" onclick="onDelete('${id}',this)">Hapus</button></td>`
+      ? `<td style="display:flex;gap:6px;align-items:center">
+           <button class="btn sm" onclick="onEditAmt('${id}',${amt},this)">✏️ Edit</button>
+           <button class="btn sm danger" onclick="onDelete('${id}',this)">Hapus</button>
+         </td>`
       : '';
-    return `<tr>
+    return `<tr data-id="${id}">
       <td class="td-muted">${time}</td>
       <td>${name}</td>
-      <td class="td-amt">${fmtRp(amt)}</td>
+      <td class="td-amt" id="amt-${id}">Rp ${fmtRp(amt)}</td>
       <td>${stBadge}</td>
-      <td>${getTierTag(amt, tiers)}</td>
+      <td id="tier-${id}">${getTierTag(amt, tiers)}</td>
       <td class="td-msg">${msg}</td>
       ${delTd}
     </tr>`;
@@ -614,6 +617,33 @@ function updateInfoCards() {
 }
 
 // ── Actions ────────────────────────────────────────────────────────────
+async function onEditAmt(id, currentAmt, btn) {
+  const input = prompt(`Edit jumlah donasi (Rp):\nSekarang: ${fmtRp(currentAmt)}`, currentAmt);
+  if (input === null) return; // batal
+  const newAmt = parseInt(input.replace(/\D/g, ''));
+  if (!newAmt || newAmt <= 0) { alert('Jumlah tidak valid.'); return; }
+
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const res = await fetch(
+      `${baseUrl()}/history/${id}/edit?key=${encodeURIComponent(apiKey())}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: newAmt }) }
+    );
+    if (res.ok) {
+      // Update tampilan langsung tanpa reload
+      const amtEl  = document.getElementById('amt-' + id);
+      const tierEl = document.getElementById('tier-' + id);
+      if (amtEl)  amtEl.textContent  = 'Rp ' + fmtRp(newAmt);
+      if (tierEl) tierEl.innerHTML   = getTierTag(newAmt, getTiers());
+    } else {
+      alert('Gagal edit amount.');
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = '✏️ Edit';
+}
+
 async function onDelete(id, btn) {
   if (!id) { alert('ID tidak ditemukan.'); return; }
   btn.disabled = true; btn.textContent = '…';
