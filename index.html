@@ -134,6 +134,29 @@
 </head>
 <body>
 
+<!-- Add Donor Modal -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <h3>➕ Tambah Donor</h3>
+    <div class="form-group">
+      <label>Nama Donor</label>
+      <input type="text" class="form-input" id="addName" placeholder="Nama donor" />
+    </div>
+    <div class="form-group">
+      <label>Jumlah (Rp)</label>
+      <input type="number" class="form-input" id="addAmt" placeholder="Contoh: 50000" />
+    </div>
+    <div class="form-group">
+      <label>Pesan (opsional)</label>
+      <input type="text" class="form-input" id="addMsg" placeholder="Pesan donasi" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn accent" onclick="submitAdd()">Tambah</button>
+      <button class="btn" onclick="closeAddModal()">Batal</button>
+    </div>
+  </div>
+</div>
+
 <!-- Edit Modal -->
 <div class="modal-bg" id="editModal">
   <div class="modal">
@@ -253,7 +276,10 @@
       <div class="tbl-wrap">
         <div class="tbl-head">
           <h3>History (Latest 20)</h3>
-          <span class="tbl-meta">Urut terbaru → lama &nbsp;·&nbsp; <span id="histUpdate">—</span></span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="tbl-meta">Urut terbaru → lama &nbsp;·&nbsp; <span id="histUpdate">—</span></span>
+            <button class="btn accent sm" onclick="openAddModal()">+ Tambah Donor</button>
+          </div>
         </div>
         <div class="tbl-scroll">
           <table>
@@ -668,6 +694,43 @@ function updateInfoCards() {
 }
 
 // ── Actions ────────────────────────────────────────────────────────────
+// ── Add Donor ──────────────────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('addName').value = '';
+  document.getElementById('addAmt').value  = '';
+  document.getElementById('addMsg').value  = '';
+  document.getElementById('addModal').classList.add('show');
+}
+
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('show');
+}
+
+async function submitAdd() {
+  const name = document.getElementById('addName').value.trim();
+  const amt  = parseInt(document.getElementById('addAmt').value);
+  const msg  = document.getElementById('addMsg').value.trim();
+
+  if (!name) { alert('Nama donor tidak boleh kosong.'); return; }
+  if (!amt || amt <= 0) { alert('Jumlah tidak valid.'); return; }
+
+  try {
+    const res = await fetch(
+      `${baseUrl()}/webhook/${apiKey()}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donatur: name, nominal: amt, pesan: msg }) }
+    );
+    if (res.ok) {
+      closeAddModal();
+      refreshAll();
+    } else {
+      alert('Gagal menambah donor.');
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
 let _editId = null, _editBtn = null;
 
 function onEdit(id, amt, name, btn) {
