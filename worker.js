@@ -192,18 +192,24 @@ async function handleDelete(id, env) {
   return json({ ok: true });
 }
 
-// ── Edit Amount ────────────────────────────────────────────────────────
+// ── Edit Entry ─────────────────────────────────────────────────────────
 async function handleEditAmount(id, request, env) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
-  const newAmount = Number(body.amount);
-  if (!newAmount || newAmount <= 0) return fail('Amount tidak valid');
 
   const donations = await getDonations(env);
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
 
-  donations[idx].amount = newAmount;
+  if (body.amount !== undefined) {
+    const newAmount = Number(body.amount);
+    if (!newAmount || newAmount <= 0) return fail('Amount tidak valid');
+    donations[idx].amount = newAmount;
+  }
+  if (body.donor_name !== undefined && body.donor_name.trim()) {
+    donations[idx].donor_name = body.donor_name.trim();
+  }
+
   await env.DB.put('donations', JSON.stringify(donations));
   await updateLeaderboard(env, donations);
   return json({ ok: true });

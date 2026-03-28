@@ -122,9 +122,36 @@
       .cfg-grid { grid-template-columns: 1fr; }
       .header-user { display: none; }
     }
+    /* Modal */
+    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
+    .modal-bg.show { display:flex; }
+    .modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:100%; max-width:380px; }
+    .modal h3 { font-size:0.95rem; font-weight:700; margin-bottom:18px; }
+    .modal .form-group { margin-bottom:14px; }
+    .modal label { font-size:0.78rem; color:var(--text-muted); display:block; margin-bottom:5px; }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; }
   </style>
 </head>
 <body>
+
+<!-- Edit Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>✏️ Edit Donasi</h3>
+    <div class="form-group">
+      <label>Nama Donor</label>
+      <input type="text" class="form-input" id="editName" />
+    </div>
+    <div class="form-group">
+      <label>Jumlah (Rp)</label>
+      <input type="number" class="form-input" id="editAmt" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn accent" onclick="submitEdit()">Simpan</button>
+      <button class="btn" onclick="closeEditModal()">Batal</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── LOGIN ── -->
 <div class="auth-wrap" id="authWrap">
@@ -598,7 +625,7 @@ function renderHistRows(data, tbodyId, withDelete) {
       : `<span class="status-ok">${esc(status)}</span>`;
     const delTd = withDelete
       ? `<td style="display:flex;gap:6px;align-items:center">
-           <button class="btn sm" onclick="onEditAmt('${id}',${amt},this)">✏️ Edit</button>
+           <button class="btn sm" onclick="onEdit('${id}',${amt},'${esc(name)}',this)">✏️ Edit</button>
            <button class="btn sm danger" onclick="onDelete('${id}',this)">Hapus</button>
          </td>`
       : '';
@@ -641,31 +668,51 @@ function updateInfoCards() {
 }
 
 // ── Actions ────────────────────────────────────────────────────────────
-async function onEditAmt(id, currentAmt, btn) {
-  const input = prompt(`Edit jumlah donasi (Rp):\nSekarang: ${fmtRp(currentAmt)}`, currentAmt);
-  if (input === null) return; // batal
-  const newAmt = parseInt(input.replace(/\D/g, ''));
+let _editId = null, _editBtn = null;
+
+function onEdit(id, amt, name, btn) {
+  _editId  = id;
+  _editBtn = btn;
+  document.getElementById('editName').value = name;
+  document.getElementById('editAmt').value  = amt;
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+  if (_editBtn) { _editBtn.disabled = false; _editBtn.textContent = '✏️ Edit'; }
+  _editId = null; _editBtn = null;
+}
+
+async function submitEdit() {
+  const newName = document.getElementById('editName').value.trim();
+  const newAmt  = parseInt(document.getElementById('editAmt').value);
+  if (!newName) { alert('Nama tidak boleh kosong.'); return; }
   if (!newAmt || newAmt <= 0) { alert('Jumlah tidak valid.'); return; }
 
-  btn.disabled = true; btn.textContent = '…';
   try {
     const res = await fetch(
-      `${baseUrl()}/history/${id}/edit?key=${encodeURIComponent(apiKey())}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: newAmt }) }
+      `${baseUrl()}/history/${_editId}/edit?key=${encodeURIComponent(apiKey())}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: newAmt, donor_name: newName }) }
     );
     if (res.ok) {
-      // Update tampilan langsung tanpa reload
-      const amtEl  = document.getElementById('amt-' + id);
-      const tierEl = document.getElementById('tier-' + id);
-      if (amtEl)  amtEl.textContent  = 'Rp ' + fmtRp(newAmt);
-      if (tierEl) tierEl.innerHTML   = getTierTag(newAmt, getTiers());
+      const amtEl  = document.getElementById('amt-'  + _editId);
+      const tierEl = document.getElementById('tier-' + _editId);
+      const row    = document.querySelector(`tr[data-id="${_editId}"]`);
+      if (amtEl)  amtEl.textContent = 'Rp ' + fmtRp(newAmt);
+      if (tierEl) tierEl.innerHTML  = getTierTag(newAmt, getTiers());
+      if (row) {
+        const nameTd = row.querySelector('td:nth-child(2)');
+        if (nameTd) nameTd.textContent = newName;
+      }
+      closeEditModal();
     } else {
-      alert('Gagal edit amount.');
+      alert('Gagal menyimpan.');
     }
   } catch(e) {
     alert('Error: ' + e.message);
   }
-  btn.disabled = false; btn.textContent = '✏️ Edit';
 }
 
 // ── Account Management ─────────────────────────────────────────────────
