@@ -289,9 +289,33 @@
 
     <!-- SETTINGS -->
     <div class="tab-pane" id="tab-settings">
+
+      <!-- Kelola Akun -->
+      <div class="settings-card" style="margin-bottom:18px">
+        <div class="settings-title">👥 Kelola Akun</div>
+        <p class="section-desc">Tambah atau hapus akun yang bisa login ke dashboard ini.</p>
+
+        <!-- Daftar akun -->
+        <div id="accountList" style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px"></div>
+
+        <!-- Tambah akun baru -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;font-weight:600">Tambah Akun Baru</div>
+          <div class="cfg-grid">
+            <div><label>Email</label><input type="email" class="form-input" id="newAccEmail" placeholder="email@contoh.com" /></div>
+            <div><label>Password</label><input type="password" class="form-input" id="newAccPass" placeholder="Min 4 karakter" /></div>
+          </div>
+          <div class="save-row">
+            <button class="btn accent" onclick="addAccount()">+ Tambah Akun</button>
+            <span class="save-ok" id="accOk">✓ Akun ditambahkan</span>
+            <span class="save-ok" id="accErr" style="color:var(--danger)"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Worker URL -->
       <div class="settings-card">
         <div class="settings-title">Worker URL</div>
-        <p class="section-desc">Ganti URL jika kamu deploy worker sendiri (misalnya <code style="color:var(--accent)">https://roblox-api-donation.loofyjo24.workers.dev</code>).</p>
         <div class="cfg-grid">
           <div><label>Worker Base URL</label><input type="url" class="form-input" id="cfgUrl" /></div>
           <div><label>API Key (kosongkan jika tidak berubah)</label><input type="text" class="form-input" id="cfgKey" placeholder="opsional" /></div>
@@ -644,6 +668,71 @@ async function onEditAmt(id, currentAmt, btn) {
   btn.disabled = false; btn.textContent = '✏️ Edit';
 }
 
+// ── Account Management ─────────────────────────────────────────────────
+async function loadAccounts() {
+  try {
+    const data = await apiFetch('/accounts');
+    const list = document.getElementById('accountList');
+    const accounts = data.data || [];
+    if (!accounts.length) {
+      list.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted)">Belum ada akun tambahan.</div>';
+      return;
+    }
+    list.innerHTML = accounts.map(a => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <span style="font-size:0.85rem">${esc(a.email)}</span>
+        <button class="btn sm danger" onclick="deleteAccount('${esc(a.email)}',this)">Hapus</button>
+      </div>`).join('');
+  } catch {}
+}
+
+async function addAccount() {
+  const email = document.getElementById('newAccEmail').value.trim();
+  const pass  = document.getElementById('newAccPass').value;
+  const ok    = document.getElementById('accOk');
+  const err   = document.getElementById('accErr');
+  err.classList.remove('show'); ok.classList.remove('show');
+
+  if (!email || !pass) { err.textContent = 'Isi email dan password.'; err.classList.add('show'); return; }
+
+  try {
+    const res  = await fetch(`${baseUrl()}/accounts?key=${encodeURIComponent(apiKey())}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('newAccEmail').value = '';
+      document.getElementById('newAccPass').value  = '';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 2500);
+      loadAccounts();
+    } else {
+      err.textContent = data.error || 'Gagal tambah akun.';
+      err.classList.add('show');
+    }
+  } catch(e) {
+    err.textContent = 'Error: ' + e.message;
+    err.classList.add('show');
+  }
+}
+
+async function deleteAccount(email, btn) {
+  if (!confirm(`Hapus akun ${email}?`)) return;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    await fetch(`${baseUrl()}/accounts/delete?key=${encodeURIComponent(apiKey())}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    loadAccounts();
+  } catch {
+    btn.disabled = false; btn.textContent = 'Hapus';
+  }
+}
+
 async function onDelete(id, btn) {
   if (!id) { alert('ID tidak ditemukan.'); return; }
   btn.disabled = true; btn.textContent = '…';
@@ -712,6 +801,7 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'settings') loadAccounts();
   });
 });
 

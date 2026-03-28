@@ -83,6 +83,24 @@ export default {
       return handleLogin(request, env);
     }
 
+    // GET /accounts?key=  ← list akun
+    if (path === '/accounts' && method === 'GET') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleListAccounts(env);
+    }
+
+    // POST /accounts?key=  ← tambah akun
+    if (path === '/accounts' && method === 'POST') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleAddAccount(request, env);
+    }
+
+    // POST /accounts/delete?key=  ← hapus akun
+    if (path === '/accounts/delete' && method === 'POST') {
+      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      return handleDeleteAccount(request, env);
+    }
+
     // GET /config?key=  ← ambil tier config (Roblox & dashboard)
     if (path === '/config' && method === 'GET') {
       if (!authKey(url, env)) return fail('Unauthorized', 401);
@@ -210,10 +228,63 @@ async function handleLogin(request, env) {
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
   const { email, password } = body;
+
+  // Cek akun utama (env vars)
   if (email === env.ADMIN_EMAIL && password === env.ADMIN_PASS) {
     return json({ ok: true, key: env.API_KEY });
   }
+
+  // Cek akun tambahan (KV)
+  const accounts = await getAccounts(env);
+  const found = accounts.find(a => a.email === email && a.password === password);
+  if (found) {
+    return json({ ok: true, key: env.API_KEY });
+  }
+
   return json({ ok: false, error: 'Email atau password salah' }, 401);
+}
+
+// ── Accounts ───────────────────────────────────────────────────────────
+async function getAccounts(env) {
+  const raw = await env.DB.get('accounts');
+  return raw ? JSON.parse(raw) : [];
+}
+
+async function handleListAccounts(env) {
+  const accounts = await getAccounts(env);
+  // Jangan kirim password ke frontend
+  return json({ data: accounts.map(a => ({ email: a.email })) });
+}
+
+async function handleAddAccount(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return fail('Invalid JSON'); }
+
+  const { email, password } = body;
+  if (!email || !password) return fail('Email dan password wajib diisi');
+  if (password.length < 4) return fail('Password minimal 4 karakter');
+
+  const accounts = await getAccounts(env);
+  if (accounts.find(a => a.email === email)) {
+    return json({ ok: false, error: 'Email sudah terdaftar' }, 400);
+  }
+
+  accounts.push({ email, password });
+  await env.DB.put('accounts', JSON.stringify(accounts));
+  return json({ ok: true });
+}
+
+async function handleDeleteAccount(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return fail('Invalid JSON'); }
+
+  const { email } = body;
+  if (!email) return fail('Email wajib diisi');
+
+  const accounts = await getAccounts(env);
+  const filtered = accounts.filter(a => a.email !== email);
+  await env.DB.put('accounts', JSON.stringify(filtered));
+  return json({ ok: true });
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
