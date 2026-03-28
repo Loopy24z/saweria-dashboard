@@ -10,7 +10,7 @@
       --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
       --border: #2e3350; --accent: #00d4c8; --accent-dim: #00b5ab;
       --text: #e4e6f1; --text-muted: #6b7194; --danger: #ff4f6d;
-      --success: #22c55e; --warning: #f59e0b; --radius: 14px;
+      --success: #22c55e; --radius: 14px;
     }
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
@@ -22,12 +22,12 @@
     .auth-logo p { color: var(--text-muted); font-size: 0.85rem; margin-top: 5px; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-    .form-input { width: 100%; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .form-input { width: 100%; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; font-family: inherit; }
     .form-input:focus { border-color: var(--accent); }
-    .btn-primary { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #0f1117; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+    .btn-primary { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #0f1117; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 4px; font-family: inherit; }
     .btn-primary:hover { background: var(--accent-dim); }
-    .auth-err { color: var(--danger); font-size: 0.82rem; text-align: center; margin-top: 8px; min-height: 18px; }
-    .auth-note { font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 12px; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .auth-err { color: var(--danger); font-size: 0.82rem; text-align: center; margin-top: 10px; min-height: 18px; }
 
     /* ── APP ── */
     .app { display: none; }
@@ -35,86 +35,92 @@
 
     .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 13px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
     .header-title { font-size: 1.05rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex: 1; }
+    .header-user { font-size: 0.78rem; color: var(--text-muted); }
     .header-actions { display: flex; align-items: center; gap: 8px; }
     .refresh-info { font-size: 0.76rem; color: var(--text-muted); }
 
-    .btn { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); color: var(--text); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .btn { padding: 7px 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); color: var(--text); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; font-family: inherit; }
     .btn:hover { background: var(--border); }
     .btn.accent { background: var(--accent); border-color: var(--accent); color: #0f1117; }
     .btn.accent:hover { background: var(--accent-dim); }
-    .btn.danger { border-color: var(--danger); color: var(--danger); }
+    .btn.danger { border-color: var(--danger); color: var(--danger); background: none; }
     .btn.danger:hover { background: rgba(255,79,109,0.1); }
-    .btn.sm { padding: 5px 10px; font-size: 0.75rem; }
+    .btn.sm { padding: 4px 10px; font-size: 0.74rem; }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .nav-tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 20px; gap: 2px; overflow-x: auto; }
-    .nav-tab { padding: 12px 16px; border: none; background: none; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s; white-space: nowrap; }
+    .nav-tabs { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 20px; overflow-x: auto; }
+    .nav-tab { padding: 12px 16px; border: none; background: none; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s; white-space: nowrap; font-family: inherit; }
     .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    .content { flex: 1; padding: 24px; max-width: 1000px; width: 100%; margin: 0 auto; }
+    .content { flex: 1; padding: 24px; max-width: 980px; width: 100%; margin: 0 auto; }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
-    /* Info cards */
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px; }
-    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-    .info-card-label { font-size: 0.74rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .info-card-val { font-size: 0.85rem; font-weight: 600; word-break: break-all; color: var(--accent); }
-    .info-card-copy { margin-top: 8px; }
+    /* Info section */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+    .info-lbl { font-size: 0.73rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+    .info-val { font-size: 0.83rem; font-weight: 600; color: var(--accent); word-break: break-all; line-height: 1.4; }
+    .info-copy { margin-top: 8px; }
 
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    /* Stats */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
     .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-    .stat-lbl { font-size: 0.74rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
-    .stat-val { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
-    .stat-sub { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .stat-val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+    .stat-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; }
 
     /* Table */
-    .tbl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
-    .tbl-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .tbl-head h3 { font-size: 0.92rem; font-weight: 700; }
-    .tbl-head-right { display: flex; align-items: center; gap: 8px; font-size: 0.76rem; color: var(--text-muted); }
+    .tbl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 22px; }
+    .tbl-head { padding: 13px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .tbl-head h3 { font-size: 0.9rem; font-weight: 700; }
+    .tbl-meta { font-size: 0.74rem; color: var(--text-muted); }
     .tbl-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
-    th { padding: 10px 16px; text-align: left; font-size: 0.74rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
-    td { padding: 11px 16px; font-size: 0.85rem; border-bottom: 1px solid rgba(46,51,80,0.5); vertical-align: middle; }
+    th { padding: 9px 14px; text-align: left; font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
+    td { padding: 11px 14px; font-size: 0.84rem; border-bottom: 1px solid rgba(46,51,80,0.4); vertical-align: top; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(0,212,200,0.02); }
-    .empty-cell { text-align: center; padding: 28px; color: var(--text-muted); font-size: 0.84rem; }
-    .td-muted { color: var(--text-muted); font-size: 0.8rem; }
-    .td-amount { font-weight: 600; color: var(--accent); }
-    .td-msg { color: var(--text-muted); font-size: 0.8rem; max-width: 200px; }
-    .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; }
+    .empty-td { text-align: center; padding: 28px; color: var(--text-muted); font-size: 0.84rem; }
+    .td-muted { color: var(--text-muted); font-size: 0.79rem; }
+    .td-amt { font-weight: 600; color: var(--accent); }
+    .td-msg { color: var(--text-muted); font-size: 0.79rem; max-width: 220px; }
+    .status-ok { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.71rem; font-weight: 600; background: rgba(34,197,94,.15); color: #22c55e; }
+    .status-pend { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.71rem; font-weight: 600; background: rgba(245,158,11,.15); color: #f59e0b; }
+    .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
     .r1 { background: rgba(251,191,36,.2); color: #fbbf24; }
     .r2 { background: rgba(148,163,184,.2); color: #94a3b8; }
     .r3 { background: rgba(180,120,60,.2); color: #b47c3c; }
     .rn { background: var(--surface2); color: var(--text-muted); }
-    .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
-    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; background: rgba(34,197,94,.15); color: #22c55e; }
+    .tier-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.71rem; font-weight: 700; }
 
-    /* Settings - Tiers */
-    .section-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; }
-    .section-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
-    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+    /* Tiers */
+    .section-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 22px; }
+    .settings-title { font-size: 0.93rem; font-weight: 700; margin-bottom: 14px; }
     .tier-list { display: flex; flex-direction: column; gap: 10px; }
-    .tier-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 140px 1fr 60px 46px 36px; gap: 10px; align-items: end; }
-    .tier-row label { font-size: 0.74rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .tier-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; display: grid; grid-template-columns: 1fr 130px 1fr 50px 40px 32px; gap: 8px; align-items: end; }
+    .tier-row label { font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .tier-row .form-input { padding: 8px 10px; font-size: 0.82rem; }
-    .btn-del { padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: all 0.2s; align-self: flex-end; }
+    .btn-del { padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: none; color: var(--text-muted); cursor: pointer; font-size: 0.88rem; transition: all 0.2s; align-self: flex-end; font-family: inherit; }
     .btn-del:hover { border-color: var(--danger); color: var(--danger); }
-    .btn-add-tier { width: 100%; padding: 10px; border: 1px dashed var(--border); border-radius: 10px; background: none; color: var(--text-muted); font-size: 0.84rem; cursor: pointer; margin-top: 10px; transition: all 0.2s; }
+    .btn-add-tier { width: 100%; padding: 10px; border: 1px dashed var(--border); border-radius: 10px; background: none; color: var(--text-muted); font-size: 0.84rem; cursor: pointer; margin-top: 10px; transition: all 0.2s; font-family: inherit; }
     .btn-add-tier:hover { border-color: var(--accent); color: var(--accent); }
     .save-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
     .save-ok { font-size: 0.78rem; color: var(--success); opacity: 0; transition: opacity 0.3s; }
     .save-ok.show { opacity: 1; }
+    .tier-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-    .cfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    .cfg-row label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
-    @media (max-width: 600px) {
+    /* Settings cfg */
+    .cfg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .cfg-grid label { font-size: 0.79rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+
+    @media (max-width: 620px) {
       .content { padding: 14px; }
-      .info-grid { grid-template-columns: 1fr; }
-      .tier-row { grid-template-columns: 1fr 1fr; }
-      .cfg-row { grid-template-columns: 1fr; }
       .stat-grid { grid-template-columns: 1fr 1fr; }
+      .tier-row { grid-template-columns: 1fr 1fr; }
+      .cfg-grid { grid-template-columns: 1fr; }
+      .header-user { display: none; }
     }
   </style>
 </head>
@@ -125,20 +131,18 @@
   <div class="auth-card">
     <div class="auth-logo">
       <h1>🎮 Saweria Dashboard</h1>
-      <p id="authSub">Login untuk kelola donasi Roblox</p>
+      <p>Login untuk kelola donasi Roblox</p>
     </div>
-    <div id="setupForm" style="display:none">
-      <div class="form-group"><label>Buat Password Admin</label><input type="password" class="form-input" id="setupPass" placeholder="Password baru (min 4 karakter)" /></div>
-      <div class="form-group"><label>Konfirmasi Password</label><input type="password" class="form-input" id="setupConfirm" placeholder="Ulangi password" /></div>
-      <button class="btn-primary" onclick="doSetup()">Buat Akun</button>
-      <div class="auth-err" id="setupErr"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="admin@email.com" />
     </div>
-    <div id="loginForm">
-      <div class="form-group"><label>Password</label><input type="password" class="form-input" id="loginPass" placeholder="Password admin" onkeydown="if(event.key==='Enter')doLogin()" /></div>
-      <button class="btn-primary" onclick="doLogin()">Masuk</button>
-      <div class="auth-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
-    <p class="auth-note">Akun tersimpan di browser ini saja.</p>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Masuk</button>
+    <div class="auth-err" id="loginErr"></div>
   </div>
 </div>
 
@@ -146,6 +150,7 @@
 <div class="app" id="app">
   <div class="header">
     <div class="header-title">🎮 Saweria Dashboard</div>
+    <span class="header-user" id="headerUser"></span>
     <div class="header-actions">
       <span class="refresh-info" id="refreshInfo"></span>
       <button class="btn accent" onclick="refreshAll()">↻ Refresh</button>
@@ -178,38 +183,40 @@
         </div>
         <div class="stat-card">
           <div class="stat-lbl">Donor #1</div>
-          <div class="stat-val" id="sTopName" style="font-size:1.1rem;margin-top:4px">—</div>
+          <div class="stat-val" id="sTopName" style="font-size:1.05rem;margin-top:4px">—</div>
           <div class="stat-sub" id="sTopAmt">—</div>
         </div>
       </div>
 
       <div class="info-grid">
         <div class="info-card">
-          <div class="info-card-label">API Key</div>
-          <div class="info-card-val" id="infoKey">—</div>
+          <div class="info-lbl">API Key</div>
+          <div class="info-val" id="infoKey">—</div>
         </div>
         <div class="info-card">
-          <div class="info-card-label">Webhook URL (Saweria)</div>
-          <div class="info-card-val" id="infoWebhook" style="font-size:0.75rem">—</div>
+          <div class="info-lbl">Webhook URL (Saweria)</div>
+          <div class="info-val" id="infoWebhook" style="font-size:0.74rem">—</div>
         </div>
         <div class="info-card">
-          <div class="info-card-label">Queue URL (Roblox)</div>
-          <div class="info-card-val" id="infoQueue" style="font-size:0.75rem">—</div>
+          <div class="info-lbl">Queue URL (Roblox)</div>
+          <div class="info-val" id="infoQueue" style="font-size:0.74rem">—</div>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">
+      <div style="margin-bottom:22px">
         <button class="btn accent" onclick="testNotif()" id="testBtn">📡 Test Notification</button>
       </div>
 
       <div class="tbl-wrap">
         <div class="tbl-head">
           <h3>History Terbaru</h3>
-          <div class="tbl-head-right"><span id="dashLastUpdate">Belum dimuat</span></div>
+          <span class="tbl-meta" id="dashUpdate">—</span>
         </div>
         <div class="tbl-scroll">
-          <table><thead><tr><th>Waktu</th><th>Donor</th><th>Jumlah</th><th>Status</th><th>Tingkat</th><th>Pesan</th></tr></thead>
-          <tbody id="dashHistTbody"><tr><td class="empty-cell" colspan="6">Memuat…</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>Waktu</th><th>Donor</th><th>Amount</th><th>Status</th><th>Tingkat</th><th>Pesan</th></tr></thead>
+            <tbody id="dashTbody"><tr><td class="empty-td" colspan="6">Memuat…</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -218,15 +225,14 @@
     <div class="tab-pane" id="tab-history">
       <div class="tbl-wrap">
         <div class="tbl-head">
-          <h3>📋 History Donasi (Latest 20)</h3>
-          <div class="tbl-head-right">
-            <span>Urut terbaru → lama</span>
-            <span id="histLastUpdate"></span>
-          </div>
+          <h3>History (Latest 20)</h3>
+          <span class="tbl-meta">Urut terbaru → lama &nbsp;·&nbsp; <span id="histUpdate">—</span></span>
         </div>
         <div class="tbl-scroll">
-          <table><thead><tr><th>Waktu</th><th>Donor</th><th>Jumlah</th><th>Status</th><th>Tingkat</th><th>Pesan</th><th>Aksi</th></tr></thead>
-          <tbody id="histTbody"><tr><td class="empty-cell" colspan="7">Memuat…</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>Waktu</th><th>Donor</th><th>Amount</th><th>Status</th><th>Tingkat</th><th>Pesan</th><th>Aksi</th></tr></thead>
+            <tbody id="histTbody"><tr><td class="empty-td" colspan="7">Memuat…</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -235,183 +241,161 @@
     <div class="tab-pane" id="tab-leaderboard">
       <div class="tbl-wrap">
         <div class="tbl-head">
-          <h3>🏆 Top Donor</h3>
-          <div class="tbl-head-right"><span id="lbLastUpdate"></span></div>
+          <h3>Top Donors</h3>
+          <span class="tbl-meta">Sort: total amount tertinggi &nbsp;·&nbsp; <span id="lbUpdate">—</span></span>
         </div>
         <div class="tbl-scroll">
-          <table><thead><tr><th>#</th><th>Donor</th><th>Total Donasi</th><th>Tingkat</th></tr></thead>
-          <tbody id="lbTbody"><tr><td class="empty-cell" colspan="4">Memuat…</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>#</th><th>Donor</th><th>Total</th><th>Tingkat</th></tr></thead>
+            <tbody id="lbTbody"><tr><td class="empty-td" colspan="4">Memuat…</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- TIERS (EDITABLE) -->
+    <!-- TIERS -->
     <div class="tab-pane" id="tab-tiers">
-      <p class="section-sub">
-        Atur tingkat donasi — nama, jumlah minimum (Rp), dan efek yang aktif di Roblox.<br>
-        Data ini disimpan di browser dan dipakai sebagai label di tabel history & leaderboard.
+      <p class="section-desc">
+        Atur tingkat donasi — nama, jumlah minimum (Rp), efek, dan warna label.<br>
+        Data tersimpan di browser dan muncul sebagai label di tabel History & Top Donor.
       </p>
       <div class="settings-card">
         <div class="tier-list" id="tierList"></div>
         <button class="btn-add-tier" onclick="addTier()">+ Tambah Tingkat</button>
         <div class="save-row">
           <button class="btn accent" onclick="saveTiers()">Simpan</button>
-          <span class="save-ok" id="tierSaveOk">✓ Tersimpan</span>
+          <span class="save-ok" id="tierOk">✓ Tersimpan</span>
         </div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
-        <div class="section-title">Preview Tingkat</div>
-        <div id="tierPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
+      <div class="settings-card">
+        <div class="settings-title">Preview</div>
+        <div class="tier-preview" id="tierPreview"></div>
       </div>
     </div>
 
     <!-- SETTINGS -->
     <div class="tab-pane" id="tab-settings">
-      <div class="section-title">Konfigurasi Worker</div>
       <div class="settings-card">
-        <div class="cfg-row">
-          <div><label>Worker Base URL</label><input type="url" class="form-input" id="cfgUrl" placeholder="https://your-worker.workers.dev" /></div>
-          <div><label>API Key</label><input type="text" class="form-input" id="cfgKey" placeholder="API key" /></div>
+        <div class="settings-title">Worker URL</div>
+        <p class="section-desc">Ganti URL jika kamu deploy worker sendiri (misalnya <code style="color:var(--accent)">https://roblox-api-donation.loofyjo24.workers.dev</code>).</p>
+        <div class="cfg-grid">
+          <div><label>Worker Base URL</label><input type="url" class="form-input" id="cfgUrl" /></div>
+          <div><label>API Key (kosongkan jika tidak berubah)</label><input type="text" class="form-input" id="cfgKey" placeholder="opsional" /></div>
         </div>
         <div class="save-row">
-          <button class="btn accent" onclick="saveApiCfg()">Simpan & Refresh</button>
-          <span class="save-ok" id="cfgSaveOk">✓ Tersimpan</span>
-        </div>
-      </div>
-
-      <div class="section-title">Ubah Password</div>
-      <div class="settings-card">
-        <div class="cfg-row">
-          <div><label>Password Lama</label><input type="password" class="form-input" id="oldPass" placeholder="Password saat ini" /></div>
-          <div><label>Password Baru</label><input type="password" class="form-input" id="newPass" placeholder="Min 4 karakter" /></div>
-        </div>
-        <div class="save-row">
-          <button class="btn accent" onclick="changePass()">Ubah Password</button>
-          <span class="save-ok" id="passSaveOk">✓ Password diubah</span>
-          <span class="save-ok" id="passErr" style="color:var(--danger)"></span>
+          <button class="btn accent" onclick="saveCfg()">Simpan & Refresh</button>
+          <span class="save-ok" id="cfgOk">✓ Tersimpan</span>
         </div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <script>
-// ── Auth ──────────────────────────────────────────────────────────────
-const getPass = () => localStorage.getItem('sw_pass');
-const setPass = (p) => localStorage.setItem('sw_pass', p);
-const isAuth  = () => sessionStorage.getItem('sw_auth') === '1';
+// ── Constants ──────────────────────────────────────────────────────────
+const DEFAULT_URL = 'https://roblox-api-donation.loofyjo24.workers.dev';
 
-function initAuth() {
-  if (!getPass()) {
-    document.getElementById('setupForm').style.display = 'block';
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('authSub').textContent = 'Buat akun admin pertama kali';
+// ── Auth ───────────────────────────────────────────────────────────────
+function getSession() {
+  try { return JSON.parse(sessionStorage.getItem('sw_session') || 'null'); } catch { return null; }
+}
+function setSession(s) { sessionStorage.setItem('sw_session', JSON.stringify(s)); }
+function clearSession() { sessionStorage.removeItem('sw_session'); }
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('loginErr');
+
+  if (!email || !pass) { err.textContent = 'Isi email dan password.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Masuk…';
+  err.textContent = '';
+
+  const url = getWorkerUrl();
+
+  try {
+    const res  = await fetch(`${url}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setSession({ email, key: data.key });
+      document.getElementById('authWrap').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      initApp();
+    } else {
+      err.textContent = data.error || 'Login gagal.';
+    }
+  } catch(e) {
+    err.textContent = 'Tidak bisa terhubung ke worker. Cek URL di bawah atau internet kamu.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Masuk';
   }
 }
 
-function doSetup() {
-  const p = document.getElementById('setupPass').value.trim();
-  const c = document.getElementById('setupConfirm').value.trim();
-  const err = document.getElementById('setupErr');
-  if (p.length < 4) { err.textContent = 'Minimal 4 karakter.'; return; }
-  if (p !== c) { err.textContent = 'Password tidak cocok.'; return; }
-  setPass(p);
-  login();
-}
-
-function doLogin() {
-  const p = document.getElementById('loginPass').value;
-  if (p !== getPass()) { document.getElementById('loginErr').textContent = 'Password salah.'; return; }
-  login();
-}
-
-function login() {
-  sessionStorage.setItem('sw_auth', '1');
-  document.getElementById('authWrap').style.display = 'none';
-  document.getElementById('app').classList.add('show');
-  initApp();
-}
-
 function doLogout() {
-  sessionStorage.removeItem('sw_auth');
+  clearSession();
   document.getElementById('authWrap').style.display = 'flex';
   document.getElementById('app').classList.remove('show');
   document.getElementById('loginPass').value = '';
   document.getElementById('loginErr').textContent = '';
 }
 
-function changePass() {
-  const old = document.getElementById('oldPass').value;
-  const nw  = document.getElementById('newPass').value.trim();
-  const ok  = document.getElementById('passSaveOk');
-  const err = document.getElementById('passErr');
-  if (old !== getPass()) { err.textContent = 'Password lama salah.'; err.classList.add('show'); ok.classList.remove('show'); return; }
-  if (nw.length < 4) { err.textContent = 'Min 4 karakter.'; err.classList.add('show'); ok.classList.remove('show'); return; }
-  setPass(nw);
-  err.classList.remove('show');
-  ok.classList.add('show');
-  setTimeout(() => ok.classList.remove('show'), 2000);
-  document.getElementById('oldPass').value = '';
-  document.getElementById('newPass').value = '';
+// ── Config ─────────────────────────────────────────────────────────────
+function getWorkerUrl() {
+  return (localStorage.getItem('sw_url') || DEFAULT_URL).replace(/\/$/, '');
 }
 
-// ── Config ────────────────────────────────────────────────────────────
-const DEFAULT_URL = 'https://roblox-api-donation.sintaacantik980.workers.dev';
-const DEFAULT_KEY = 'gGIFXL2GIVEwBfKNROUdG6hrP1EhXRL2';
-
-function getCfg() {
-  return {
-    url: localStorage.getItem('sw_url') || DEFAULT_URL,
-    key: localStorage.getItem('sw_key') || DEFAULT_KEY,
-  };
-}
-
-function saveApiCfg() {
+function saveCfg() {
   const u = document.getElementById('cfgUrl').value.trim().replace(/\/$/, '');
   const k = document.getElementById('cfgKey').value.trim();
   if (u) localStorage.setItem('sw_url', u);
-  if (k) localStorage.setItem('sw_key', k);
-  showOk('cfgSaveOk');
-  updateInfoCards();
+  if (k) {
+    const s = getSession();
+    if (s) { s.key = k; setSession(s); }
+  }
+  showOk('cfgOk');
   refreshAll();
 }
 
-// ── Tiers ─────────────────────────────────────────────────────────────
+// ── Tiers ──────────────────────────────────────────────────────────────
 const DEFAULT_TIERS = [
-  { name: 'Kilat',   minRp: 1,        effect: 'Partikel', color: '#6b7194' },
-  { name: 'Api',     minRp: 50000,    effect: 'Nuke',     color: '#f97316' },
-  { name: 'Badai',   minRp: 150000,   effect: 'Spesial',  color: '#a855f7' },
-  { name: 'Legenda', minRp: 500000,   effect: 'Blackhole + Hammer', color: '#00d4c8' },
+  { name: 'Kilat',   minRp: 1,       effect: 'Partikel',           color: '#6b7194' },
+  { name: 'Api',     minRp: 50000,   effect: 'Nuke',               color: '#f97316' },
+  { name: 'Badai',   minRp: 150000,  effect: 'Spesial',            color: '#a855f7' },
+  { name: 'Legenda', minRp: 500000,  effect: 'Blackhole + Hammer', color: '#00d4c8' },
 ];
 
 function getTiers() {
-  const s = localStorage.getItem('sw_tiers');
-  return s ? JSON.parse(s) : DEFAULT_TIERS;
+  try { return JSON.parse(localStorage.getItem('sw_tiers')) || DEFAULT_TIERS; }
+  catch { return DEFAULT_TIERS; }
 }
 
 function saveTiers() {
-  const rows = document.querySelectorAll('.tier-row');
+  const rows  = document.querySelectorAll('.tier-row');
   const tiers = [];
-  rows.forEach(r => {
-    tiers.push({
-      name:   r.querySelector('.ti-name').value.trim() || 'Tier',
-      minRp:  parseInt(r.querySelector('.ti-minrp').value) || 0,
-      effect: r.querySelector('.ti-effect').value.trim() || '-',
-      color:  r.querySelector('.ti-color').value || '#6b7194',
-    });
-  });
+  rows.forEach(r => tiers.push({
+    name:   r.querySelector('.ti-name').value.trim()   || 'Tier',
+    minRp:  parseInt(r.querySelector('.ti-minrp').value)  || 0,
+    effect: r.querySelector('.ti-effect').value.trim() || '-',
+    color:  r.querySelector('.ti-color').value          || '#6b7194',
+  }));
   tiers.sort((a, b) => a.minRp - b.minRp);
   localStorage.setItem('sw_tiers', JSON.stringify(tiers));
   renderTiers(tiers);
   renderTierPreview(tiers);
-  showOk('tierSaveOk');
+  showOk('tierOk');
 }
 
 function addTier() {
-  const tiers = getTiers();
-  tiers.push({ name: 'Tier Baru', minRp: 0, effect: 'Efek', color: '#6b7194' });
-  renderTiers(tiers);
+  renderTiers([...getTiers(), { name: 'Tier Baru', minRp: 0, effect: 'Efek', color: '#6b7194' }]);
 }
 
 function renderTiers(tiers) {
@@ -421,39 +405,32 @@ function renderTiers(tiers) {
     const d = document.createElement('div');
     d.className = 'tier-row';
     d.innerHTML = `
-      <div><label>Nama</label><input class="form-input ti-name" value="${esc(t.name)}" /></div>
-      <div><label>Min (Rp)</label><input type="number" class="form-input ti-minrp" value="${t.minRp}" /></div>
-      <div><label>Efek / Keterangan</label><input class="form-input ti-effect" value="${esc(t.effect)}" /></div>
-      <div><label>Warna</label><input type="color" class="form-input ti-color" value="${t.color}" style="padding:4px;height:36px" /></div>
-      <div style="align-self:flex-end"><button class="btn-del" onclick="this.closest('.tier-row').remove()">✕</button></div>
-    `;
+      <div><label>Nama</label><input class="form-input ti-name" value="${esc(t.name)}"></div>
+      <div><label>Min Rp</label><input type="number" class="form-input ti-minrp" value="${t.minRp}"></div>
+      <div><label>Efek</label><input class="form-input ti-effect" value="${esc(t.effect)}"></div>
+      <div><label>Warna</label><input type="color" class="form-input ti-color" value="${t.color}" style="padding:4px;height:36px"></div>
+      <div style="align-self:flex-end"><button class="btn-del" onclick="this.closest('.tier-row').remove()">✕</button></div>`;
     list.appendChild(d);
   });
 }
 
 function renderTierPreview(tiers) {
-  const el = document.getElementById('tierPreview');
-  el.innerHTML = tiers.map(t =>
-    `<span class="tier-badge" style="background:${t.color}22;color:${t.color}">
-      ${esc(t.name)} — Rp ${fmtRp(t.minRp)}+ (${esc(t.effect)})
-    </span>`
+  document.getElementById('tierPreview').innerHTML = tiers.map(t =>
+    `<span class="tier-tag" style="background:${t.color}22;color:${t.color}">${esc(t.name)} — Rp ${fmtRp(t.minRp)}+ · ${esc(t.effect)}</span>`
   ).join('');
 }
 
-function getTierBadge(amount, tiers) {
-  const sorted = [...tiers].sort((a, b) => b.minRp - a.minRp);
-  for (const t of sorted) {
-    if (amount >= t.minRp) {
-      return `<span class="tier-badge" style="background:${t.color}22;color:${t.color}">${esc(t.name)}</span>`;
-    }
-  }
-  return `<span class="tier-badge" style="background:var(--surface2);color:var(--text-muted)">—</span>`;
+function getTierTag(amount, tiers) {
+  const t = [...tiers].sort((a, b) => b.minRp - a.minRp).find(x => amount >= x.minRp);
+  return t
+    ? `<span class="tier-tag" style="background:${t.color}22;color:${t.color}">${esc(t.name)}</span>`
+    : `<span class="tier-tag" style="background:var(--surface2);color:var(--text-muted)">—</span>`;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────
-function fmtRp(n) {
-  return Number(n).toLocaleString('id-ID');
-}
+// ── Helpers ────────────────────────────────────────────────────────────
+const fmtRp   = n  => Number(n).toLocaleString('id-ID');
+const esc     = s  => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const nowStr  = () => new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
 function fmtTime(str) {
   if (!str) return '—';
@@ -464,82 +441,36 @@ function fmtTime(str) {
   } catch { return str; }
 }
 
-function esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function showOk(id, dur = 2000) {
+function showOk(id) {
   const el = document.getElementById(id);
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
+  setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-function nowStr() {
-  return new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-}
+// ── API ────────────────────────────────────────────────────────────────
+function apiKey()  { return getSession()?.key || ''; }
+function baseUrl() { return getWorkerUrl(); }
 
-// ── API ───────────────────────────────────────────────────────────────
-let cachedHistory = [];
-let cachedLeaderboard = [];
-
-async function fetchLeaderboard() {
-  const { url, key } = getCfg();
-  const res = await fetch(`${url}/leaderboard?key=${encodeURIComponent(key)}`);
+async function apiFetch(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch(`${baseUrl()}${path}${sep}key=${encodeURIComponent(apiKey())}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const j = await res.json();
-  return j.data || [];
+  return res.json();
 }
 
-async function fetchHistory() {
-  const { url, key } = getCfg();
-  for (const ep of ['/history', '/donations', '/queue']) {
-    try {
-      const res = await fetch(`${url}${ep}?key=${encodeURIComponent(key)}`);
-      if (!res.ok) continue;
-      const j = await res.json();
-      const data = j.data || j.donations || j.history || j.items || [];
-      if (Array.isArray(data) && data.length > 0) return data;
-    } catch {}
-  }
-  return null;
+async function apiPost(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch(`${baseUrl()}${path}${sep}key=${encodeURIComponent(apiKey())}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-async function deleteEntry(id) {
-  const { url, key } = getCfg();
-  try {
-    const res = await fetch(`${url}/history/${id}/delete?key=${encodeURIComponent(key)}`, { method: 'POST' });
-    if (res.ok) return true;
-    // try DELETE method
-    const res2 = await fetch(`${url}/history/${id}?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
-    return res2.ok;
-  } catch { return false; }
-}
-
-async function testNotif() {
-  const { url, key } = getCfg();
-  const btn = document.getElementById('testBtn');
-  btn.disabled = true;
-  btn.textContent = 'Mengirim…';
-  try {
-    const res = await fetch(`${url}/test-notification?key=${encodeURIComponent(key)}`, { method: 'POST' });
-    if (res.ok) {
-      btn.textContent = '✓ Terkirim';
-      setTimeout(() => { btn.textContent = '📡 Test Notification'; btn.disabled = false; }, 2000);
-    } else {
-      btn.textContent = `Gagal (${res.status})`;
-      setTimeout(() => { btn.textContent = '📡 Test Notification'; btn.disabled = false; }, 2000);
-    }
-  } catch(e) {
-    btn.textContent = 'Error: ' + e.message;
-    setTimeout(() => { btn.textContent = '📡 Test Notification'; btn.disabled = false; }, 3000);
-  }
-}
-
-// ── Render ────────────────────────────────────────────────────────────
-function renderHistoryTable(data, tbodyId, withDelete) {
+// ── Render ─────────────────────────────────────────────────────────────
+function renderHistRows(data, tbodyId, withDelete) {
   const tbody = document.getElementById(tbodyId);
-  if (!data || !data.length) {
-    tbody.innerHTML = `<tr><td class="empty-cell" colspan="${withDelete ? 7 : 6}">Belum ada data.</td></tr>`;
+  const cols  = withDelete ? 7 : 6;
+  if (!data?.length) {
+    tbody.innerHTML = `<tr><td class="empty-td" colspan="${cols}">Belum ada data.</td></tr>`;
     return;
   }
   const tiers = getTiers();
@@ -548,44 +479,29 @@ function renderHistoryTable(data, tbodyId, withDelete) {
     const amt    = Number(r.amount || r.total_amount || r.totalAmount || 0);
     const status = r.status || 'claimed';
     const msg    = esc(r.message || r.msg || '—');
-    const time   = fmtTime(r.created_at || r.timestamp || r.time || null);
-    const id     = r.id || r.ID || '';
-    const delBtn = withDelete
-      ? `<td><button class="btn sm danger" onclick="onDelete('${id}', this)">Hapus</button></td>`
+    const time   = fmtTime(r.created_at || r.timestamp || null);
+    const id     = r.id || '';
+    const stBadge = status === 'pending'
+      ? `<span class="status-pend">${esc(status)}</span>`
+      : `<span class="status-ok">${esc(status)}</span>`;
+    const delTd = withDelete
+      ? `<td><button class="btn sm danger" onclick="onDelete('${id}',this)">Hapus</button></td>`
       : '';
     return `<tr>
       <td class="td-muted">${time}</td>
       <td>${name}</td>
-      <td class="td-amount">Rp ${fmtRp(amt)}</td>
-      <td><span class="status-badge">${esc(status)}</span></td>
-      <td>${getTierBadge(amt, tiers)}</td>
+      <td class="td-amt">${fmtRp(amt)}</td>
+      <td>${stBadge}</td>
+      <td>${getTierTag(amt, tiers)}</td>
       <td class="td-msg">${msg}</td>
-      ${delBtn}
+      ${delTd}
     </tr>`;
   }).join('');
 }
 
-async function onDelete(id, btn) {
-  if (!id) { alert('ID tidak ditemukan, hapus dari dashboard asli.'); return; }
-  btn.disabled = true;
-  btn.textContent = '…';
-  const ok = await deleteEntry(id);
-  if (ok) {
-    btn.closest('tr').remove();
-  } else {
-    btn.textContent = 'Gagal';
-    alert('Gagal hapus. Coba dari dashboard asli: ' + getCfg().url + '/dashboard');
-    btn.disabled = false;
-    btn.textContent = 'Hapus';
-  }
-}
-
 function renderLeaderboard(data) {
   const tbody = document.getElementById('lbTbody');
-  if (!data || !data.length) {
-    tbody.innerHTML = '<tr><td class="empty-cell" colspan="4">Belum ada data.</td></tr>';
-    return;
-  }
+  if (!data?.length) { tbody.innerHTML = '<tr><td class="empty-td" colspan="4">Belum ada data.</td></tr>'; return; }
   const tiers = getTiers();
   tbody.innerHTML = data.map((r, i) => {
     const name = esc(r.donor_name || r.donorName || '—');
@@ -595,68 +511,83 @@ function renderLeaderboard(data) {
     return `<tr>
       <td><span class="rank-badge ${rc}">${rank}</span></td>
       <td>${name}</td>
-      <td class="td-amount">Rp ${fmtRp(amt)}</td>
-      <td>${getTierBadge(amt, tiers)}</td>
+      <td class="td-amt">${fmtRp(amt)}</td>
+      <td>${getTierTag(amt, tiers)}</td>
     </tr>`;
   }).join('');
 }
 
 function updateInfoCards() {
-  const { url, key } = getCfg();
-  document.getElementById('infoKey').textContent = key;
-  document.getElementById('infoWebhook').textContent = `${url}/webhook/${key}`;
-  document.getElementById('infoQueue').textContent = `${url}/queue?key=${key}`;
+  const url = baseUrl();
+  const key = apiKey();
+  document.getElementById('infoKey').textContent     = key || '—';
+  document.getElementById('infoWebhook').textContent = key ? `${url}/webhook/${key}` : '—';
+  document.getElementById('infoQueue').textContent   = key ? `${url}/queue?key=${key}` : '—';
 }
 
+// ── Actions ────────────────────────────────────────────────────────────
+async function onDelete(id, btn) {
+  if (!id) { alert('ID tidak ditemukan.'); return; }
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    await apiPost(`/history/${id}/delete`);
+    btn.closest('tr').remove();
+  } catch {
+    btn.textContent = 'Gagal';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Hapus'; }, 2000);
+  }
+}
+
+async function testNotif() {
+  const btn = document.getElementById('testBtn');
+  btn.disabled = true; btn.textContent = 'Mengirim…';
+  try {
+    await apiPost('/test-notification');
+    btn.textContent = '✓ Terkirim';
+  } catch(e) {
+    btn.textContent = 'Gagal: ' + e.message;
+  }
+  setTimeout(() => { btn.textContent = '📡 Test Notification'; btn.disabled = false; }, 2500);
+}
+
+// ── Refresh ────────────────────────────────────────────────────────────
 async function refreshAll() {
   const now = nowStr();
   document.getElementById('refreshInfo').textContent = 'Memuat…';
-  const tiers = getTiers();
   updateInfoCards();
 
+  // Leaderboard
   try {
-    const lb = await fetchLeaderboard();
-    cachedLeaderboard = lb;
-
-    // Stats
-    const totalAmt  = lb.reduce((s, r) => s + (Number(r.total_amount || r.totalAmount) || 0), 0);
-    const top = lb[0];
-    document.getElementById('sTotal').textContent = 'Rp ' + fmtRp(totalAmt);
-    document.getElementById('sDonors').textContent = lb.length;
-    document.getElementById('sTopName').textContent = top ? (top.donor_name || top.donorName || '—') : '—';
-    document.getElementById('sTopAmt').textContent = top ? 'Rp ' + fmtRp(top.total_amount || top.totalAmount || 0) : '—';
-
+    const lb = (await apiFetch('/leaderboard')).data || [];
     renderLeaderboard(lb);
-    document.getElementById('lbLastUpdate').textContent = 'Update: ' + now;
+    document.getElementById('lbUpdate').textContent = now;
 
-    // Use top 5 for dashboard preview
-    renderHistoryTable(lb.slice(0, 5), 'dashHistTbody', false);
-    document.getElementById('dashLastUpdate').textContent = 'Update: ' + now;
+    const totalAmt = lb.reduce((s, r) => s + (Number(r.total_amount || r.totalAmount) || 0), 0);
+    document.getElementById('sTotal').textContent   = fmtRp(totalAmt);
+    document.getElementById('sDonors').textContent  = lb.length;
+    const top = lb[0];
+    document.getElementById('sTopName').textContent = top ? (top.donor_name || top.donorName || '—') : '—';
+    document.getElementById('sTopAmt').textContent  = top ? 'Rp ' + fmtRp(top.total_amount || top.totalAmount || 0) : '—';
 
     document.getElementById('refreshInfo').textContent = 'Update: ' + now;
   } catch(e) {
-    document.getElementById('refreshInfo').textContent = 'Error leaderboard';
-    console.error(e);
+    document.getElementById('refreshInfo').textContent = 'Error: ' + e.message;
   }
 
+  // History
   try {
-    const hist = await fetchHistory();
-    if (hist) {
-      cachedHistory = hist;
-      renderHistoryTable(hist, 'histTbody', true);
-      renderHistoryTable(hist.slice(0, 5), 'dashHistTbody', false);
-      document.getElementById('histLastUpdate').textContent = 'Update: ' + now;
-      document.getElementById('dashLastUpdate').textContent = 'Update: ' + now;
-    } else {
-      document.getElementById('histTbody').innerHTML =
-        '<tr><td class="empty-cell" colspan="7">Endpoint history tidak tersedia — cek di tab Settings untuk sesuaikan URL.</td></tr>';
-    }
-  } catch(e) {
-    console.error(e);
+    const hist = (await apiFetch('/history')).data || [];
+    renderHistRows(hist, 'histTbody', true);
+    renderHistRows(hist.slice(0, 5), 'dashTbody', false);
+    document.getElementById('histUpdate').textContent  = now;
+    document.getElementById('dashUpdate').textContent  = now;
+  } catch {
+    document.getElementById('histTbody').innerHTML =
+      '<tr><td class="empty-td" colspan="7">Endpoint /history tidak tersedia.</td></tr>';
   }
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────
+// ── Tabs ───────────────────────────────────────────────────────────────
 document.querySelectorAll('.nav-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
@@ -666,11 +597,11 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
   });
 });
 
-// ── Init ──────────────────────────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────────────────
 function initApp() {
-  const cfg = getCfg();
-  document.getElementById('cfgUrl').value = cfg.url;
-  document.getElementById('cfgKey').value = cfg.key;
+  const s = getSession();
+  document.getElementById('headerUser').textContent = s?.email || '';
+  document.getElementById('cfgUrl').value = getWorkerUrl();
   const tiers = getTiers();
   renderTiers(tiers);
   renderTierPreview(tiers);
@@ -678,13 +609,12 @@ function initApp() {
   setInterval(refreshAll, 60_000);
 }
 
-// ── Boot ──────────────────────────────────────────────────────────────
-if (isAuth()) {
+// ── Boot ───────────────────────────────────────────────────────────────
+const session = getSession();
+if (session?.key) {
   document.getElementById('authWrap').style.display = 'none';
   document.getElementById('app').classList.add('show');
   initApp();
-} else {
-  initAuth();
 }
 </script>
 </body>
