@@ -126,12 +126,15 @@ async function handleWebhook(request, env) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
-  const name   = body.donatur || body.donor_name || body.name || 'Anonymous';
-  const amount = Number(body.nominal || body.amount || 0);
-  const msg    = body.pesan || body.message || '';
-  const time   = body.created_on || new Date().toISOString();
+  console.log('[webhook] body keys:', Object.keys(body).join(','));
+  console.log('[webhook] body:', JSON.stringify(body));
 
-  if (!amount) return fail('No amount');
+  const name   = body.donatur || body.donator_name || body.donor_name || body.name || 'Anonymous';
+  const amount = Number(body.amount_raw ?? body.nominal ?? body.amount ?? 0);
+  const msg    = body.pesan || body.message || '';
+  const time   = body.created_at || body.created_on || body.paid_at || new Date().toISOString();
+
+  if (!amount) return fail('No amount: ' + JSON.stringify(body));
 
   const cfg       = await getConfig(env);
   const level     = levelForAmount(amount, cfg.tiers);
@@ -164,7 +167,7 @@ async function handleQueue(env) {
 
   return json({
     data: pending.map(({ id, donor_name, amount, message, created_at }) => ({
-      id, donor_name, amount, message, created_at,
+      id, donor_name, donorName: donor_name, amount, message, created_at,
     })),
   });
 }
@@ -178,7 +181,7 @@ async function handleLeaderboard(env) {
 // ── History ────────────────────────────────────────────────────────────
 async function handleHistory(env) {
   const donations = await getDonations(env);
-  return json({ data: donations.slice(0, 20) });
+  return json({ data: donations });
 }
 
 // ── Delete ─────────────────────────────────────────────────────────────

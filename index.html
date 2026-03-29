@@ -275,15 +275,16 @@
     <div class="tab-pane" id="tab-history">
       <div class="tbl-wrap">
         <div class="tbl-head">
-          <h3>History (Latest 20)</h3>
-          <div style="display:flex;align-items:center;gap:10px">
+          <h3>History</h3>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span class="tbl-meta">Urut terbaru → lama &nbsp;·&nbsp; <span id="histUpdate">—</span></span>
+            <input id="histSearch" type="text" placeholder="Cari donor / pesan…" oninput="filterHistory()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.8rem;width:180px;">
             <button class="btn accent sm" onclick="openAddModal()">+ Tambah Donor</button>
           </div>
         </div>
-        <div class="tbl-scroll">
+        <div class="tbl-scroll" style="max-height:520px;overflow-y:auto;">
           <table>
-            <thead><tr><th>Waktu</th><th>Donor</th><th>Amount</th><th>Status</th><th>Tingkat</th><th>Pesan</th><th>Aksi</th></tr></thead>
+            <thead style="position:sticky;top:0;z-index:1;background:var(--surface2);"><tr><th>Waktu</th><th>Donor</th><th>Amount</th><th>Status</th><th>Tingkat</th><th>Pesan</th><th>Aksi</th></tr></thead>
             <tbody id="histTbody"><tr><td class="empty-td" colspan="7">Memuat…</td></tr></tbody>
           </table>
         </div>
@@ -695,6 +696,14 @@ function updateInfoCards() {
 
 // ── Actions ────────────────────────────────────────────────────────────
 // ── Add Donor ──────────────────────────────────────────────────────────
+function filterHistory() {
+  const q = (document.getElementById('histSearch').value || '').toLowerCase();
+  const rows = document.querySelectorAll('#histTbody tr');
+  rows.forEach(tr => {
+    tr.style.display = q === '' || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
 function openAddModal() {
   document.getElementById('addName').value = '';
   document.getElementById('addAmt').value  = '';
