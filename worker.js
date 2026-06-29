@@ -263,7 +263,7 @@ async function handleTestNotif(env) {
 }
 
 // ── Login ──────────────────────────────────────────────────────────────
-async function handleLogin(request, env) {
+export async function handleLogin(request, env) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
@@ -274,11 +274,11 @@ async function handleLogin(request, env) {
     return json({ ok: true, key: env.API_KEY, isAdmin: true });
   }
 
-  // Cek akun tambahan (KV) — bukan admin
+  // Cek akun tambahan (KV) — bukan admin, pakai apiKey sendiri
   const accounts = await getAccounts(env);
   const found = accounts.find(a => a.email === email && a.password === password);
   if (found) {
-    return json({ ok: true, key: env.API_KEY, isAdmin: false });
+    return json({ ok: true, key: found.apiKey, isAdmin: false });
   }
 
   return json({ ok: false, error: 'Email atau password salah' }, 401);
