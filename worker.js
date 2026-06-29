@@ -61,11 +61,12 @@ export default {
 
     if (method === 'OPTIONS') return new Response(null, { headers: CORS });
 
-    // POST /webhook/{API_KEY}  ← Saweria kirim donasi ke sini
+    // POST /webhook/{key}  ← Saweria kirim donasi ke sini (admin atau akun)
     const wh = path.match(/^\/webhook\/(.+)$/);
     if (wh && method === 'POST') {
-      if (wh[1] !== env.API_KEY) return fail('Unauthorized', 401);
-      return handleWebhook(request, env);
+      const key = wh[1];
+      if (!(await isValidKey(key, env))) return fail('Unauthorized', 401);
+      return handleWebhook(request, env, key);
     }
 
     // GET /queue?key=  ← Roblox ambil donasi pending
@@ -149,7 +150,7 @@ export default {
 };
 
 // ── Webhook ────────────────────────────────────────────────────────────
-async function handleWebhook(request, env) {
+export async function handleWebhook(request, env, key) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
@@ -163,9 +164,9 @@ async function handleWebhook(request, env) {
 
   if (!amount) return fail('No amount: ' + JSON.stringify(body));
 
-  const cfg       = await getConfig(env);
+  const cfg       = await getConfig(env, key);
   const level     = levelForAmount(amount, cfg.tiers);
-  const donations = await getDonations(env);
+  const donations = await getDonations(env, key);
   donations.unshift({
     id:         Date.now(),
     donor_name: name,
@@ -177,8 +178,8 @@ async function handleWebhook(request, env) {
   });
 
   if (donations.length > 100) donations.splice(100);
-  await env.DB.put('donations', JSON.stringify(donations));
-  await updateLeaderboard(env, donations);
+  await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
+  await updateLeaderboard(env, donations, key);
   return json({ ok: true });
 }
 
