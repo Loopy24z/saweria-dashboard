@@ -26,6 +26,33 @@ const fail = (msg, status = 400) =>
 const authKey = (url, env) => url.searchParams.get('key') === env.API_KEY;
 const isAdmin = (url, env) => url.searchParams.get('admin') === env.ADMIN_EMAIL;
 
+// ── Tenant routing helpers ───────────────────────────────────────────────
+export function nsKey(prefix, key, env) {
+  return key === env.API_KEY ? prefix : `${prefix}:${key}`;
+}
+
+export function keyMatches(key, env, accounts) {
+  if (!key) return false;
+  if (key === env.API_KEY) return true;
+  return accounts.some(a => a.apiKey === key);
+}
+
+export function generateApiKey(accounts, env) {
+  const existing = new Set([env.API_KEY, ...accounts.map(a => a.apiKey)]);
+  let key;
+  do { key = crypto.randomUUID().replace(/-/g, ''); } while (existing.has(key));
+  return key;
+}
+
+async function isValidKey(key, env) {
+  return keyMatches(key, env, await getAccounts(env));
+}
+
+async function resolveTenantKey(url, env) {
+  const key = url.searchParams.get('key');
+  return (await isValidKey(key, env)) ? key : null;
+}
+
 export default {
   async fetch(request, env) {
     const url    = new URL(request.url);
