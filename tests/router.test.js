@@ -48,6 +48,12 @@ test('router: end-to-end tenant isolation webhook -> history', async () => {
   assert.equal(adminHist.data.length, 0);
 });
 
+test('router: account key + real admin email on /accounts -> 403 (no escalation)', async () => {
+  const env = mockEnv({ accounts: JSON.stringify([{ email: 'a@x', password: 'p', apiKey: 'k1' }]) }, 'ADMINKEY');
+  const res = await worker.fetch(req('GET', '/accounts?key=k1&admin=admin@test'), env);
+  assert.equal(res.status, 403);
+});
+
 test('router: OPTIONS preflight returns 200 with CORS', async () => {
   const env = mockEnv({}, 'ADMINKEY');
   const res = await worker.fetch(req('OPTIONS', '/queue'), env);

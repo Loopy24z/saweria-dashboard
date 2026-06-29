@@ -23,8 +23,6 @@ const json = (data, status = 200) =>
 const fail = (msg, status = 400) =>
   new Response(msg, { status, headers: CORS });
 
-const isAdmin = (url, env) => url.searchParams.get('admin') === env.ADMIN_EMAIL;
-
 // ── Tenant routing helpers ───────────────────────────────────────────────
 export function nsKey(prefix, key, env) {
   return key === env.API_KEY ? prefix : `${prefix}:${key}`;
@@ -44,6 +42,8 @@ export function generateApiKey(accounts, env) {
 }
 
 async function isValidKey(key, env) {
+  if (!key) return false;
+  if (key === env.API_KEY) return true;
   return keyMatches(key, env, await getAccounts(env));
 }
 
@@ -121,7 +121,7 @@ export default {
     if (path === '/accounts' && method === 'GET') {
       const key = await resolveTenantKey(url, env);
       if (!key) return fail('Unauthorized', 401);
-      if (!isAdmin(url, env)) return fail('Admin only', 403);
+      if (key !== env.API_KEY) return fail('Admin only', 403);
       return handleListAccounts(env);
     }
 
@@ -129,7 +129,7 @@ export default {
     if (path === '/accounts' && method === 'POST') {
       const key = await resolveTenantKey(url, env);
       if (!key) return fail('Unauthorized', 401);
-      if (!isAdmin(url, env)) return fail('Admin only', 403);
+      if (key !== env.API_KEY) return fail('Admin only', 403);
       return handleAddAccount(request, env);
     }
 
@@ -137,7 +137,7 @@ export default {
     if (path === '/accounts/delete' && method === 'POST') {
       const key = await resolveTenantKey(url, env);
       if (!key) return fail('Unauthorized', 401);
-      if (!isAdmin(url, env)) return fail('Admin only', 403);
+      if (key !== env.API_KEY) return fail('Admin only', 403);
       return handleDeleteAccount(request, env);
     }
 
@@ -296,9 +296,15 @@ export async function handleLogin(request, env) {
 }
 
 // ── Accounts ───────────────────────────────────────────────────────────
-async function getAccounts(env) {
+export async function getAccounts(env) {
   const raw = await env.DB.get('accounts');
-  return raw ? JSON.parse(raw) : [];
+  const accounts = raw ? JSON.parse(raw) : [];
+  let changed = false;
+  for (const a of accounts) {
+    if (!a.apiKey) { a.apiKey = generateApiKey(accounts, env); changed = true; }
+  }
+  if (changed) await env.DB.put('accounts', JSON.stringify(accounts));
+  return accounts;
 }
 
 export async function handleListAccounts(env) {

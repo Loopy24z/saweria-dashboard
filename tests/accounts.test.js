@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleAddAccount, handleListAccounts, handleDeleteAccount } from '../worker.js';
+import { handleAddAccount, handleListAccounts, handleDeleteAccount, getAccounts } from '../worker.js';
 import { mockEnv, makeReq } from './helpers.js';
 
 test('handleAddAccount: stores account with generated apiKey', async () => {
@@ -53,4 +53,13 @@ test('handleDeleteAccount: unknown email returns 404 and leaves accounts intact'
   assert.equal(res.status, 404);
   assert.equal((await res.json()).ok, false);
   assert.equal(JSON.parse(env._store.get('accounts')).length, 1);
+});
+
+test('getAccounts: backfills + persists apiKey for legacy accounts missing one', async () => {
+  const env = mockEnv({ accounts: JSON.stringify([{ email: 'old@x', password: 'p' }]) }, 'ADMINKEY');
+  const accounts = await getAccounts(env);
+  assert.equal(typeof accounts[0].apiKey, 'string');
+  assert.ok(accounts[0].apiKey.length >= 16);
+  const persisted = JSON.parse(env._store.get('accounts'));
+  assert.ok(persisted[0].apiKey);
 });
