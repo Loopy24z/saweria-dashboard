@@ -328,8 +328,8 @@ async function handleDeleteAccount(request, env) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
-async function getDonations(env) {
-  const raw = await env.DB.get('donations');
+export async function getDonations(env, key) {
+  const raw = await env.DB.get(nsKey('donations', key, env));
   return raw ? JSON.parse(raw) : [];
 }
 
@@ -356,8 +356,8 @@ async function handleSetConfig(request, env) {
   return json({ ok: true });
 }
 
-async function getConfig(env) {
-  const raw = await env.DB.get('tier_config');
+export async function getConfig(env, key) {
+  const raw = await env.DB.get(nsKey('tier_config', key, env));
   return raw ? JSON.parse(raw) : DEFAULT_CONFIG;
 }
 
@@ -370,7 +370,7 @@ function levelForAmount(amount, tiers) {
 }
 
 // ── Leaderboard helper ─────────────────────────────────────────────────
-async function updateLeaderboard(env, donations) {
+export async function updateLeaderboard(env, donations, key) {
   const totals = {};
   for (const d of donations) {
     totals[d.donor_name] = (totals[d.donor_name] || 0) + (Number(d.amount) || 0);
@@ -379,5 +379,5 @@ async function updateLeaderboard(env, donations) {
     .map(([donor_name, total_amount]) => ({ donor_name, total_amount }))
     .sort((a, b) => b.total_amount - a.total_amount)
     .slice(0, 20);
-  await env.DB.put('leaderboard', JSON.stringify(lb));
+  await env.DB.put(nsKey('leaderboard', key, env), JSON.stringify(lb));
 }
