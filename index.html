@@ -802,8 +802,11 @@ async function loadAccounts() {
       return;
     }
     list.innerHTML = accounts.map(a => `
-      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
-        <span style="font-size:0.85rem">${esc(a.email)}</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <div style="min-width:0">
+          <div style="font-size:0.85rem">${esc(a.email)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-family:monospace;word-break:break-all">${esc(a.apiKey || '—')}</div>
+        </div>
         <button class="btn sm danger" onclick="deleteAccount('${esc(a.email)}',this)">Hapus</button>
       </div>`).join('');
   } catch {}
