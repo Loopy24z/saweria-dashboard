@@ -290,13 +290,13 @@ async function getAccounts(env) {
   return raw ? JSON.parse(raw) : [];
 }
 
-async function handleListAccounts(env) {
+export async function handleListAccounts(env) {
   const accounts = await getAccounts(env);
   // Jangan kirim password ke frontend
-  return json({ data: accounts.map(a => ({ email: a.email })) });
+  return json({ data: accounts.map(a => ({ email: a.email, apiKey: a.apiKey })) });
 }
 
-async function handleAddAccount(request, env) {
+export async function handleAddAccount(request, env) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
@@ -309,12 +309,13 @@ async function handleAddAccount(request, env) {
     return json({ ok: false, error: 'Email sudah terdaftar' }, 400);
   }
 
-  accounts.push({ email, password });
+  const apiKey = generateApiKey(accounts, env);
+  accounts.push({ email, password, apiKey });
   await env.DB.put('accounts', JSON.stringify(accounts));
-  return json({ ok: true });
+  return json({ ok: true, apiKey });
 }
 
-async function handleDeleteAccount(request, env) {
+export async function handleDeleteAccount(request, env) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
@@ -322,8 +323,15 @@ async function handleDeleteAccount(request, env) {
   if (!email) return fail('Email wajib diisi');
 
   const accounts = await getAccounts(env);
+  const acct = accounts.find(a => a.email === email);
   const filtered = accounts.filter(a => a.email !== email);
   await env.DB.put('accounts', JSON.stringify(filtered));
+
+  if (acct?.apiKey) {
+    await env.DB.delete(nsKey('donations', acct.apiKey, env));
+    await env.DB.delete(nsKey('leaderboard', acct.apiKey, env));
+    await env.DB.delete(nsKey('tier_config', acct.apiKey, env));
+  }
   return json({ ok: true });
 }
 
