@@ -23,7 +23,6 @@ const json = (data, status = 200) =>
 const fail = (msg, status = 400) =>
   new Response(msg, { status, headers: CORS });
 
-const authKey = (url, env) => url.searchParams.get('key') === env.API_KEY;
 const isAdmin = (url, env) => url.searchParams.get('admin') === env.ADMIN_EMAIL;
 
 // ── Tenant routing helpers ───────────────────────────────────────────────
@@ -71,40 +70,46 @@ export default {
 
     // GET /queue?key=  ← Roblox ambil donasi pending
     if (path === '/queue' && method === 'GET') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleQueue(env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleQueue(env, key);
     }
 
     // GET /leaderboard?key=
     if (path === '/leaderboard' && method === 'GET') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleLeaderboard(env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleLeaderboard(env, key);
     }
 
     // GET /history?key=
     if (path === '/history' && method === 'GET') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleHistory(env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleHistory(env, key);
     }
 
     // POST /history/{id}/delete?key=
     const del = path.match(/^\/history\/(\d+)\/delete$/);
     if (del && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleDelete(del[1], env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleDelete(del[1], env, key);
     }
 
-    // POST /history/{id}/edit?key=  ← edit amount donasi
+    // POST /history/{id}/edit?key=  ← edit amount/nama donasi
     const edit = path.match(/^\/history\/(\d+)\/edit$/);
     if (edit && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleEditAmount(edit[1], request, env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleEditAmount(edit[1], request, env, key);
     }
 
     // POST /test-notification?key=
     if (path === '/test-notification' && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleTestNotif(env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleTestNotif(env, key);
     }
 
     // POST /api/login  ← dashboard login
@@ -114,35 +119,40 @@ export default {
 
     // GET /accounts?key=  ← list akun (admin only)
     if (path === '/accounts' && method === 'GET') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
       if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleListAccounts(env);
     }
 
     // POST /accounts?key=  ← tambah akun (admin only)
     if (path === '/accounts' && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
       if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleAddAccount(request, env);
     }
 
     // POST /accounts/delete?key=  ← hapus akun (admin only)
     if (path === '/accounts/delete' && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
       if (!isAdmin(url, env)) return fail('Admin only', 403);
       return handleDeleteAccount(request, env);
     }
 
     // GET /config?key=  ← ambil tier config (Roblox & dashboard)
     if (path === '/config' && method === 'GET') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleGetConfig(env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleGetConfig(env, key);
     }
 
     // POST /config?key=  ← simpan tier config dari dashboard
     if (path === '/config' && method === 'POST') {
-      if (!authKey(url, env)) return fail('Unauthorized', 401);
-      return handleSetConfig(request, env);
+      const key = await resolveTenantKey(url, env);
+      if (!key) return fail('Unauthorized', 401);
+      return handleSetConfig(request, env, key);
     }
 
     return fail('Not Found', 404);
@@ -184,14 +194,14 @@ export async function handleWebhook(request, env, key) {
 }
 
 // ── Queue ──────────────────────────────────────────────────────────────
-async function handleQueue(env) {
-  const donations = await getDonations(env);
+export async function handleQueue(env, key) {
+  const donations = await getDonations(env, key);
   const pending   = donations.filter(d => d.status === 'pending');
 
   for (const d of donations) {
     if (d.status === 'pending') d.status = 'claimed';
   }
-  if (pending.length) await env.DB.put('donations', JSON.stringify(donations));
+  if (pending.length) await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
 
   return json({
     data: pending.map(({ id, donor_name, amount, message, created_at }) => ({
@@ -201,34 +211,34 @@ async function handleQueue(env) {
 }
 
 // ── Leaderboard ────────────────────────────────────────────────────────
-async function handleLeaderboard(env) {
-  const raw = await env.DB.get('leaderboard');
+export async function handleLeaderboard(env, key) {
+  const raw = await env.DB.get(nsKey('leaderboard', key, env));
   return json({ data: raw ? JSON.parse(raw) : [] });
 }
 
 // ── History ────────────────────────────────────────────────────────────
-async function handleHistory(env) {
-  const donations = await getDonations(env);
+export async function handleHistory(env, key) {
+  const donations = await getDonations(env, key);
   return json({ data: donations });
 }
 
 // ── Delete ─────────────────────────────────────────────────────────────
-async function handleDelete(id, env) {
-  const donations = await getDonations(env);
+async function handleDelete(id, env, key) {
+  const donations = await getDonations(env, key);
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
   donations.splice(idx, 1);
-  await env.DB.put('donations', JSON.stringify(donations));
-  await updateLeaderboard(env, donations);
+  await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
+  await updateLeaderboard(env, donations, key);
   return json({ ok: true });
 }
 
 // ── Edit Entry ─────────────────────────────────────────────────────────
-async function handleEditAmount(id, request, env) {
+async function handleEditAmount(id, request, env, key) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
-  const donations = await getDonations(env);
+  const donations = await getDonations(env, key);
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
 
@@ -241,14 +251,14 @@ async function handleEditAmount(id, request, env) {
     donations[idx].donor_name = body.donor_name.trim();
   }
 
-  await env.DB.put('donations', JSON.stringify(donations));
-  await updateLeaderboard(env, donations);
+  await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
+  await updateLeaderboard(env, donations, key);
   return json({ ok: true });
 }
 
 // ── Test Notif ─────────────────────────────────────────────────────────
-async function handleTestNotif(env) {
-  const donations = await getDonations(env);
+async function handleTestNotif(env, key) {
+  const donations = await getDonations(env, key);
   donations.unshift({
     id:         Date.now(),
     donor_name: 'TestDonor',
@@ -258,8 +268,8 @@ async function handleTestNotif(env) {
     created_at: new Date().toISOString(),
   });
   if (donations.length > 100) donations.splice(100);
-  await env.DB.put('donations', JSON.stringify(donations));
-  await updateLeaderboard(env, donations);
+  await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
+  await updateLeaderboard(env, donations, key);
   return json({ ok: true });
 }
 
@@ -354,15 +364,15 @@ const DEFAULT_CONFIG = {
   effectMinRp: { Nuke: 50000, Hammer: 500000, Blackhole: 1000000 },
 };
 
-async function handleGetConfig(env) {
-  const raw = await env.DB.get('tier_config');
+export async function handleGetConfig(env, key) {
+  const raw = await env.DB.get(nsKey('tier_config', key, env));
   return json(raw ? JSON.parse(raw) : DEFAULT_CONFIG);
 }
 
-async function handleSetConfig(request, env) {
+async function handleSetConfig(request, env, key) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
-  await env.DB.put('tier_config', JSON.stringify(body));
+  await env.DB.put(nsKey('tier_config', key, env), JSON.stringify(body));
   return json({ ok: true });
 }
 
