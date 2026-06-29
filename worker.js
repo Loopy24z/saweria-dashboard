@@ -324,6 +324,7 @@ export async function handleDeleteAccount(request, env) {
 
   const accounts = await getAccounts(env);
   const acct = accounts.find(a => a.email === email);
+  if (!acct) return json({ ok: false, error: 'Akun tidak ditemukan' }, 404);
   const filtered = accounts.filter(a => a.email !== email);
   await env.DB.put('accounts', JSON.stringify(filtered));
 

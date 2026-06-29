@@ -46,3 +46,11 @@ test('handleDeleteAccount: removes account and its data', async () => {
   assert.equal(env._store.has('leaderboard:k1'), false);
   assert.equal(env._store.has('tier_config:k1'), false);
 });
+
+test('handleDeleteAccount: unknown email returns 404 and leaves accounts intact', async () => {
+  const env = mockEnv({ accounts: JSON.stringify([{ email: 'a@x', password: 'p', apiKey: 'k1' }]) }, 'ADMINKEY');
+  const res = await handleDeleteAccount(makeReq({ email: 'nobody@x' }), env);
+  assert.equal(res.status, 404);
+  assert.equal((await res.json()).ok, false);
+  assert.equal(JSON.parse(env._store.get('accounts')).length, 1);
+});
