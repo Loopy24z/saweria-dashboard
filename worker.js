@@ -194,17 +194,19 @@ export async function handleWebhook(request, env, key) {
 }
 
 // ── Queue ──────────────────────────────────────────────────────────────
+// Donasi dikirim ke SEMUA server Roblox yang polling dalam jendela waktu ini,
+// bukan "sekali ambil". Roblox men-dedup sendiri (per-server, by id), jadi tiap
+// server tetap menampilkan tiap donasi sekali. Poll (15s) < window < dedup TTL (120s).
+// Tanpa ini, satu donasi cuma sampai ke server yang polling paling cepat.
+const QUEUE_WINDOW_MS = 60_000;
+
 export async function handleQueue(env, key) {
   const donations = await getDonations(env, key);
-  const pending   = donations.filter(d => d.status === 'pending');
-
-  for (const d of donations) {
-    if (d.status === 'pending') d.status = 'claimed';
-  }
-  if (pending.length) await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
+  const cutoff    = Date.now() - QUEUE_WINDOW_MS;
+  const recent    = donations.filter(d => Number(d.id) >= cutoff);
 
   return json({
-    data: pending.map(({ id, donor_name, amount, message, created_at }) => ({
+    data: recent.map(({ id, donor_name, amount, message, created_at }) => ({
       id, donor_name, donorName: donor_name, amount, message, created_at,
     })),
   });
