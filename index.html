@@ -891,11 +891,16 @@ async function refreshAll() {
 
   // Leaderboard
   try {
-    const lb = (await apiFetch('/leaderboard')).data || [];
+    const lbResp = await apiFetch('/leaderboard');
+    const lb = lbResp.data || [];
     renderLeaderboard(lb);
     document.getElementById('lbUpdate').textContent = now;
 
-    const totalAmt = lb.reduce((s, r) => s + (Number(r.total_amount || r.totalAmount) || 0), 0);
+    // All-time total comes from the worker (survives the 100-donation cap).
+    // Fallback to summing the board if the worker isn't updated yet.
+    const totalAmt = typeof lbResp.total === 'number'
+      ? lbResp.total
+      : lb.reduce((s, r) => s + (Number(r.total_amount || r.totalAmount) || 0), 0);
     document.getElementById('sTotal').textContent   = fmtRp(totalAmt);
     document.getElementById('sDonors').textContent  = lb.length;
     const top = lb[0];

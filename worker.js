@@ -190,6 +190,7 @@ export async function handleWebhook(request, env, key) {
   if (donations.length > 100) donations.splice(100);
   await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
   await updateLeaderboard(env, donations, key);
+  await bumpTotal(env, key, amount, donations);
   return json({ ok: true });
 }
 
@@ -215,7 +216,12 @@ export async function handleQueue(env, key) {
 // ── Leaderboard ────────────────────────────────────────────────────────
 export async function handleLeaderboard(env, key) {
   const raw = await env.DB.get(nsKey('leaderboard', key, env));
-  return json({ data: raw ? JSON.parse(raw) : [] });
+  const data = raw ? JSON.parse(raw) : [];
+  const statsRaw = await env.DB.get(nsKey('stats', key, env));
+  const total = statsRaw
+    ? (Number(JSON.parse(statsRaw).total) || 0)
+    : data.reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
+  return json({ data, total });
 }
 
 // ── History ────────────────────────────────────────────────────────────
@@ -225,18 +231,20 @@ export async function handleHistory(env, key) {
 }
 
 // ── Delete ─────────────────────────────────────────────────────────────
-async function handleDelete(id, env, key) {
+export async function handleDelete(id, env, key) {
   const donations = await getDonations(env, key);
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
+  const removedAmount = Number(donations[idx].amount) || 0;
   donations.splice(idx, 1);
   await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
   await updateLeaderboard(env, donations, key);
+  await bumpTotal(env, key, -removedAmount, donations);
   return json({ ok: true });
 }
 
 // ── Edit Entry ─────────────────────────────────────────────────────────
-async function handleEditAmount(id, request, env, key) {
+export async function handleEditAmount(id, request, env, key) {
   let body;
   try { body = await request.json(); } catch { return fail('Invalid JSON'); }
 
@@ -244,9 +252,11 @@ async function handleEditAmount(id, request, env, key) {
   const idx = donations.findIndex(d => String(d.id) === String(id));
   if (idx === -1) return fail('Not found', 404);
 
+  let amountDelta = 0;
   if (body.amount !== undefined) {
     const newAmount = Number(body.amount);
     if (!newAmount || newAmount <= 0) return fail('Amount tidak valid');
+    amountDelta = newAmount - (Number(donations[idx].amount) || 0);
     donations[idx].amount = newAmount;
   }
   if (body.donor_name !== undefined && body.donor_name.trim()) {
@@ -255,6 +265,7 @@ async function handleEditAmount(id, request, env, key) {
 
   await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
   await updateLeaderboard(env, donations, key);
+  await bumpTotal(env, key, amountDelta, donations);
   return json({ ok: true });
 }
 
@@ -272,6 +283,7 @@ async function handleTestNotif(env, key) {
   if (donations.length > 100) donations.splice(100);
   await env.DB.put(nsKey('donations', key, env), JSON.stringify(donations));
   await updateLeaderboard(env, donations, key);
+  await bumpTotal(env, key, 25000, donations);
   return json({ ok: true });
 }
 
@@ -359,6 +371,21 @@ export async function handleDeleteAccount(request, env) {
 export async function getDonations(env, key) {
   const raw = await env.DB.get(nsKey('donations', key, env));
   return raw ? JSON.parse(raw) : [];
+}
+
+// ── Running all-time total ───────────────────────────────────────────────
+// The donations list is capped at 100, so it can't hold the true all-time
+// total (summing it made the dashboard total shrink as old donations aged out).
+// Keep a separate counter: +amount on donation, -amount on delete, adjusted on
+// edit. On cold start seed from whatever donations remain — history before the
+// last 100 was never stored, so this recalibrates and stays accurate from here.
+async function bumpTotal(env, key, delta, donationsAfter) {
+  const raw = await env.DB.get(nsKey('stats', key, env));
+  let total = raw
+    ? (Number(JSON.parse(raw).total) || 0) + delta
+    : donationsAfter.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+  if (total < 0) total = 0;
+  await env.DB.put(nsKey('stats', key, env), JSON.stringify({ total }));
 }
 
 // ── Config ─────────────────────────────────────────────────────────────
